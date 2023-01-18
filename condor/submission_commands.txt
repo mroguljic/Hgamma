@@ -1,0 +1,1 @@
+python run_skim.py -c skim_configs/2017/mc.json -y 2017
