@@ -1,0 +1,17 @@
+{
+  "SinglePhoton2017B": {
+    "dataset":"/SinglePhoton/Run2017B-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2017C": {
+    "dataset":"/SinglePhoton/Run2017C-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2017D": {
+    "dataset":"/SinglePhoton/Run2017D-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2017E": {
+    "dataset":"/SinglePhoton/Run2017E-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2017F": {
+    "dataset":"/SinglePhoton/Run2017F-UL2017_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  }
+}

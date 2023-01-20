@@ -1,0 +1,32 @@
+{
+  "SinglePhoton2017B": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017B/"
+  },
+  "SinglePhoton2017C": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017C/"
+  },
+  "SinglePhoton2017D": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017D/"
+  },
+  "SinglePhoton2017E": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017E/"
+  },
+  "SinglePhoton2017F": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017F/"
+  },
+  "ZGamma": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/ZGamma"
+  },
+  "WGamma": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/WGamma"
+  },
+  "GJets400": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets400"
+  },
+  "GJets600": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets600"
+  },
+  "TTGJets": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/TTGJets"
+  }
+}
