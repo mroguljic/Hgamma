@@ -123,6 +123,9 @@ def eventSelection(options):
     a.Cut("EtaCut","abs(FatJet_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
     nEta = getNweighted(a,isData)
 
+    a.Cut("GammaID","Photon_cutBased[0]==3")#Fall17V2 Tight
+    nID = getNweighted(a,isData)
+
     evtColumns = VarGroup("Event columns")
     evtColumns.Add('FatJet_pt_corr','hardware::MultiHadamardProduct(FatJet_pt,%s)'%ptCorrector)
     evtColumns.Add('FatJet_msoftdrop_corr','hardware::MultiHadamardProduct(FatJet_msoftdrop,%s)'%massCorrector)
@@ -145,6 +148,39 @@ def eventSelection(options):
     nJetMass = getNweighted(a,isData)
 
     a.Define("pnetHiggs","FatJet_particleNetMD_Xbb[Hidx]/(FatJet_particleNetMD_Xbb[Hidx]+FatJet_particleNetMD_QCD[Hidx])")
+
+    checkpoint  = a.GetActiveNode()
+    #-----Trigger study part-------#
+    if(options.variation=="nom"):
+        baselineTrigger="HLT_PFJet260"
+        a.SetActiveNode(beforeTrigCheckpoint)
+        a.Cut("Baseline",baselineTrigger)
+        if(MetFiltersString):
+            a.Cut("MET For Trigger",MetFiltersString)
+        #need to change names to create nodes with different names than already existing
+        a.Cut("JetAndPhotonForTrig","nFatJet>0 && nPhoton>0")
+        a.Define("Hidx","leadingNonGammaAK8Idx(nFatJet,FatJet_eta,FatJet_phi,Photon_eta[0],Photon_phi[0])")
+        a.Cut("HidxCutForTrig","Hidx>-1")
+        nJetGamma = getNweighted(a,isData)
+        a.Cut("EtaCutForTrig","abs(FatJet_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
+        a.Cut("GammaIDForTrig","Photon_cutBased[0]==3")
+        evtColumns.name = "Event Columns For Trigger"
+        a.Apply([evtColumns])
+        a.Cut("pT_ForTrigger","Higgs_pt>300 && Gamma_pt>300")
+        a.Cut("JetPnetMassCut_ForTrigger","HiggsPnetMass>50")
+
+        triggersStringAll   = a.GetTriggerString(triggerList)  
+        h_pTnoTriggers      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTnoTriggers'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',70,300,1000),"Gamma_pt","genWeight")
+        a.Cut("Triggers for trig measurement",triggersStringAll)
+        h_pTtriggersAll      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTtriggersAll'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',70,300,1000),"Gamma_pt","genWeight")
+
+        histos.append(h_pTnoTriggers)
+        histos.append(h_pTtriggersAll)
+        a.SetActiveNode(checkpoint)
+    #------------------------------#
+
+
+
     #--------Store Output----------#
 
     snapshotColumns = ["pnetHiggs","Higgs_pt","Gamma_pt","HiggsSDMass","HiggsPnetMass","PV_npvsGood","nFatJet","nPhoton"]
@@ -170,8 +206,8 @@ def eventSelection(options):
 
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)
 
-    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,npT,nJetMass]
-    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","pT","JetMass","pass","fail"]#tagging bins will be filled out in template making
+    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,nID,npT,nJetMass]
+    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","pass","fail"]#tagging bins will be filled out in template making
     nCutFlowlabels      = len(cutFlowLabels)
     hCutFlow            = ROOT.TH1F('{0}_cutflow'.format(options.process),"Number of events after each cut",nCutFlowlabels,0.5,nCutFlowlabels+0.5)
     for i,label in enumerate(cutFlowLabels):
