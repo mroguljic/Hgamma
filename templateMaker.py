@@ -15,37 +15,6 @@ def getNweighted(analyzer,isData):
         nWeighted = analyzer.DataFrame.Count().GetValue()
     return nWeighted
 
-def separateVHistos(analyzer,process,region,nomTreeFlag,massVar):
-    cats = {
-    "light" : "jetCat==1",
-    "c"     : "jetCat==2",
-    "b"     : "jetCat==3",
-    "bc"     : "jetCat==3 || jetCat==2",
-    "unm"   : "jetCat==0"}
-
-    separatedHistos = []
-    separatedGroups = []
-    beforeNode = analyzer.GetActiveNode()
-    for cat in cats:
-        analyzer.SetActiveNode(beforeNode)
-        analyzer.Cut("{0}_{1}_{2}_cut".format(process,cat,region),"{0}".format(cats[cat]))
-
-        if nomTreeFlag:
-            tplHist   = r.TH2F('{0}_{1}_m_pT_{2}'.format(process,cat,region),';{0} [GeV];pT [GeV];'.format(massVar),32,40,200,31,450,2000)
-            templates = analyzer.MakeTemplateHistos(tplHist,[massVar,"FatJet_pt0"])
-            separatedGroups.append(templates)
-        else:
-            #For jms/jmr/jes/jer trees, we don't need to calculate uncertainties on nominal trees
-            hist = analyzer.DataFrame.Histo2D(('{0}_{1}_m_pT_{2}'.format(process,cat,region),';{0} [GeV];pT [GeV];'.format(massVar),32,40,200,31,450,2000),massVar,"FatJet_pt0","weight__nominal")
-            separatedHistos.append(hist)
-
-        hVpt = analyzer.DataFrame.Histo1D(('{0}_{1}_VpT_{2}'.format(process,cat,region),';V pT [GeV];;',200,0,2000),"genVpt","weight__nominal")
-        separatedHistos.append(hVpt)
-
-    analyzer.SetActiveNode(beforeNode)
-    return separatedHistos,separatedGroups
-
-
 def getNCut(analyzer,cut,cutName):
     beforeNode = analyzer.GetActiveNode()
     analyzer.Cut(cutName,cut)
@@ -128,10 +97,12 @@ genWCorr    = Correction('genW',"TIMBER/Framework/Zbb_modules/BranchCorrection.c
 a.AddCorrection(genWCorr, evalArgs={'val':'genWeight'})
 
 if not isData:
-    pdfCorr     = genWCorr.Clone("pdfUnc",newMainFunc="evalUncert",newType="uncert")
-    puCorr      = genWCorr.Clone("puUnc",newMainFunc="evalWeight",newType="weight")
-    a.AddCorrection(pdfCorr, evalArgs={'valUp':'Pdfweight__up','valDown':'Pdfweight__down'})
-    a.AddCorrection(puCorr, evalArgs={'val':'Pileup__nom','valUp':'Pileup__up','valDown':'Pileup__down'})
+    if not "Hgamma" in options.process:
+        #Private signal does not have proper pdf nor pu correction
+        pdfCorr     = genWCorr.Clone("pdfUnc",newMainFunc="evalUncert",newType="uncert")
+        puCorr      = genWCorr.Clone("puUnc",newMainFunc="evalWeight",newType="weight")
+        a.AddCorrection(pdfCorr, evalArgs={'valUp':'Pdfweight__up','valDown':'Pdfweight__down'})
+        a.AddCorrection(puCorr, evalArgs={'val':'Pileup__nom','valUp':'Pileup__up','valDown':'Pileup__down'})
 
     if(year=="2018"):
         hemCorr = genWCorr.Clone("hemCorrection")

@@ -1,2 +1,6 @@
 python run_skim.py -c skim_configs/2017/mc.json -y 2017
 python run_skim.py -c skim_configs/2017/data.json -y 2017
+
+python run_selection.py -y 2017
+
+python run_templates.py tight
