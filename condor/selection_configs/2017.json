@@ -20,6 +20,9 @@
   "WGamma": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2017/WGamma"
   },
+  "Hgamma": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/Hgamma"
+  },
   "GJets400": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets400"
   },
