@@ -5,7 +5,7 @@
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},
- "Hgamma": {"xsec": 1.0},
+ "Hgamma": {"xsec": 0.01},
  "lumi":16800
  },
 "2016APV":{
@@ -14,7 +14,7 @@
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},
- "Hgamma": {"xsec": 1.0},
+ "Hgamma": {"xsec": 0.01},
  "lumi":19500
  },
 "2017":{
@@ -23,8 +23,8 @@
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},
- "Hgamma": {"xsec": 1.0},
- "lumi":138000
+ "Hgamma": {"xsec": 0.01},
+ "lumi":41500
 },
  "2018":{
  "ZGamma": {"xsec": 4.144},
@@ -32,7 +32,7 @@
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},
- "Hgamma": {"xsec": 1.0},
+ "Hgamma": {"xsec": 0.01},
  "lumi":59800
  }
 }
