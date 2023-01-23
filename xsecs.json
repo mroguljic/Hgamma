@@ -1,0 +1,38 @@
+{
+"2016":{
+ "ZGamma": {"xsec": 4.144},
+ "WGamma": {"xsec": 8.635},
+ "GJets400": {"xsec": 126.2},
+ "GJets600": {"xsec": 41.31},
+ "TTGJets": {"xsec": 3.757},
+ "Hgamma": {"xsec": 1.0},
+ "lumi":16800
+ },
+"2016APV":{
+ "ZGamma": {"xsec": 4.144},
+ "WGamma": {"xsec": 8.635},
+ "GJets400": {"xsec": 126.2},
+ "GJets600": {"xsec": 41.31},
+ "TTGJets": {"xsec": 3.757},
+ "Hgamma": {"xsec": 1.0},
+ "lumi":19500
+ },
+"2017":{
+ "ZGamma": {"xsec": 4.144},
+ "WGamma": {"xsec": 8.635},
+ "GJets400": {"xsec": 126.2},
+ "GJets600": {"xsec": 41.31},
+ "TTGJets": {"xsec": 3.757},
+ "Hgamma": {"xsec": 1.0},
+ "lumi":138000
+},
+ "2018":{
+ "ZGamma": {"xsec": 4.144},
+ "WGamma": {"xsec": 8.635},
+ "GJets400": {"xsec": 126.2},
+ "GJets600": {"xsec": 41.31},
+ "TTGJets": {"xsec": 3.757},
+ "Hgamma": {"xsec": 1.0},
+ "lumi":59800
+ }
+}
