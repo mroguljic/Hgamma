@@ -2,6 +2,8 @@
 "2016":{
  "ZGamma": {"xsec": 4.144},
  "WGamma": {"xsec": 8.635},
+ "GJets100": {"xsec": 5034},
+ "GJets200": {"xsec": 1129},
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},
@@ -11,6 +13,8 @@
 "2016APV":{
  "ZGamma": {"xsec": 4.144},
  "WGamma": {"xsec": 8.635},
+ "GJets100": {"xsec": 5034},
+ "GJets200": {"xsec": 1129},
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},
@@ -20,6 +24,8 @@
 "2017":{
  "ZGamma": {"xsec": 4.144},
  "WGamma": {"xsec": 8.635},
+ "GJets100": {"xsec": 5034},
+ "GJets200": {"xsec": 1129},
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},
@@ -29,6 +35,8 @@
  "2018":{
  "ZGamma": {"xsec": 4.144},
  "WGamma": {"xsec": 8.635},
+ "GJets100": {"xsec": 5034},
+ "GJets200": {"xsec": 1129},
  "GJets400": {"xsec": 126.2},
  "GJets600": {"xsec": 41.31},
  "TTGJets": {"xsec": 3.757},

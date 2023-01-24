@@ -84,7 +84,7 @@ def blindHiggsMass(hist):
             hist.SetBinContent(i,0)
     return hist
 
-def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",mergeMassBins=False,blind=True):
+def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",mergeMassBins=False,blind=True,kFactor=1.7):
     histos  = []
     labels  = []
     edges   = []
@@ -92,27 +92,45 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
     histosData = []#we're assuming only one data_obs dataset
     edgesData  = []#it's still kept in array (with one element) to be similar to other processes
     labelsData = []
+    histosSig  = []#we're assuming only one signal dataset
+    edgesSig   = []#it's still kept in array (with one element) to be similar to other processes
+    labelsSig  = []
+    colorsSig  = []
+
     data = sorted(data.items(), key=lambda x: x[1]["order"])#VERY HANDY, reads samples in order
     for sample, sample_cfg in data:
         if("singlephoton" in sample.lower() or "data" in sample.lower()):
             dataFlag = True
         else:
             dataFlag = False
+        if("hgamma" in sample.lower()):
+            sigFlag  = True
+        else:
+            sigFlag  = False
+
         tempFile = r.TFile.Open(sample_cfg["file"])
         #print("Opening ", sample_cfg["file"])
         h = tempFile.Get("{0}_{1}".format(sample,var))
+        if("GJets" in sample):
+            h.Scale(kFactor)
         h.RebinX(rebinX)
         if(dataFlag and blind):
             h = blindHiggsMass(h)
         hist, edges = hist2array(h,return_edges=True)
         if(mergeMassBins):
             hist, edges = mergeLoMassBins(hist,edges[0])
-        if("singlephoton" in sample.lower() or "data" in sample.lower()):
+        if dataFlag:
             histosData.append(hist)
             dataMax = max(hist)
             edgesData.append(edges[0])
             labelsData.append(sample_cfg["label"])
-            continue  
+            continue
+        elif sigFlag:
+            histosSig.append(hist)
+            edgesSig.append(edges[0])
+            labelsSig.append(sample_cfg["label"])
+            colorsSig.append(sample_cfg["color"])
+            continue            
         else:
             histos.append(hist)
             edges.append(edges[0])
@@ -135,6 +153,7 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
             xerrorsData.append(xerror)
     #--------------------------#
     hep.histplot(histos,edges[0],stack=True,ax=axs[0],label=labels,linewidth=1,histtype="fill",facecolor=colors,edgecolor='black')
+    hep.histplot(histosSig,edges[0],stack=False,ax=axs[0],label=labelsSig,linewidth=3,histtype="step",edgecolor=colorsSig)
     if mergeMassBins:
         plt.errorbar(centresData,histosData[0], yerr=errorsData, xerr=xerrorsData, fmt='o',color="k",label = labelsData[0])    
     else:

@@ -1,0 +1,11 @@
+{
+  "SinglePhoton2016F": {
+    "dataset":"/SinglePhoton/Run2016F-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2016G": {
+    "dataset":"/SinglePhoton/Run2016G-UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD"
+  },
+  "SinglePhoton2016H": {
+    "dataset":"/SinglePhoton/Run2016H-UL2016_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  }
+}

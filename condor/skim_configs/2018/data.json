@@ -1,0 +1,14 @@
+{
+  "SinglePhoton2018A": {
+    "dataset":"/EGamma/Run2018A-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2018B": {
+    "dataset":"/EGamma/Run2018B-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2018C": {
+    "dataset":"/EGamma/Run2018C-UL2018_MiniAODv2_NanoAODv9-v1/NANOAOD"
+  },
+  "SinglePhoton2018D": {
+    "dataset":"/EGamma/Run2018D-UL2018_MiniAODv2_NanoAODv9-v3/NANOAOD"
+  }
+}

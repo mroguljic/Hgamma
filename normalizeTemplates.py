@@ -58,7 +58,7 @@ def mergeSamples(inFiles,outFile,regexMatch,regexReplace):
 
 def lumiNormalization(wp="tight",tagger="ParticleNet"):
 
-    processes = ["ZGamma","WGamma","GJets400","GJets600","TTGJets","Hgamma"]
+    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma"]
     #for year in ['2016','2016APV','2017','2018']:
     for year in ['2017']:
         print(year)
@@ -75,7 +75,7 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
             else:
                 print("{0} does not exist, skipping!".format(nonScaledFile))
         
-        GJetsSamples = ["GJets400.root","GJets600.root"]
+        GJetsSamples = ["GJets200.root","GJets400.root","GJets600.root"]
         GJetsSamples = [lumiScaledDir+f for f in GJetsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
         mergeSamples(GJetsSamples,"{0}/GJets{1}.root".format(lumiScaledDir,year[2:]),"GJets\d+_","GJets_")
 

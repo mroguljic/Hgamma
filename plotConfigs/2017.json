@@ -3,25 +3,25 @@
     "file": "results/templates/tight/2017/scaled/ZGamma.root",
     "color":"blue",
     "label": "Z+Gamma",
-    "order": 6
+    "order": 4
   },
   "WGamma": {
     "file": "results/templates/tight/2017/scaled/WGamma.root",
     "color":"slateblue",
     "label": "W+Gamma",
-    "order": 6
+    "order": 3
   },
   "GJets": {
     "file": "results/templates/tight/2017/scaled/GJets17.root",
     "color":"deepskyblue",
     "label": "Gamma+Jets",
-    "order": 6
+    "order": 1
   },
   "TTGJets": {
     "file": "results/templates/tight/2017/scaled/TTGJets.root",
     "color":"lavender",
     "label": "ttbar+Gamma",
-    "order": 6
+    "order": 2
   },
   "Hgamma": {
     "file": "results/templates/tight/2017/scaled/Hgamma.root",
