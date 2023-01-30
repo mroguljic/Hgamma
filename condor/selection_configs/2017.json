@@ -34,5 +34,20 @@
   },
   "TTGJets": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2017/TTGJets"
+  },
+  "QCD500": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD500"
+  },
+  "QCD700": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD700"
+  },
+  "QCD1000": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD1000"
+  },
+  "QCD1500": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD1500"
+  },
+  "QCD2000": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD2000"
   }
 }

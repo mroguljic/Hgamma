@@ -84,7 +84,7 @@ def blindHiggsMass(hist):
             hist.SetBinContent(i,0)
     return hist
 
-def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",mergeMassBins=False,blind=True,kFactor=1.7):
+def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",mergeMassBins=False,blind=True,kFactor=1.25):
     histos  = []
     labels  = []
     edges   = []
@@ -111,7 +111,7 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
         tempFile = r.TFile.Open(sample_cfg["file"])
         #print("Opening ", sample_cfg["file"])
         h = tempFile.Get("{0}_{1}".format(sample,var))
-        if("GJets" in sample):
+        if("GJets" in sample or "QCD" in sample):
             h.Scale(kFactor)
         h.RebinX(rebinX)
         if(dataFlag and blind):
@@ -145,7 +145,14 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
     plt.sca(axs[0])
 
     centresData = (edgesData[0][:-1] + edgesData[0][1:])/2.
-    errorsData  = np.sqrt(histosData[0])
+    if(mergeMassBins):
+        errorsData = []
+        for i, histCount in enumerate(histosData[0]):
+            width       = edges[0][i+1]-edges[0][i]
+            errorData   = np.sqrt(histCount*width)/width
+            errorsData.append(errorData)
+    else:
+        errorsData  = np.sqrt(histosData[0])
     xerrorsData = []
     if(mergeMassBins):
         for i in range(len(edges[0])-1):
@@ -383,8 +390,8 @@ def printMCYields(data,region,year):
 if __name__ == '__main__':
 
 
-    # for year in ["2016","2016APV","2017","2018"]:
-    for year in ["2017"]:
+    #for year in ["2016","2016APV","2017","2018"]:
+    for year in ["RunII"]:
         odir = "results/plots/tight/{0}/".format(year)
         Path(odir).mkdir(parents=True, exist_ok=True)
         
@@ -396,6 +403,8 @@ if __name__ == '__main__':
             luminosity="41.5"
         elif(year=="2018"):
             luminosity="59.8"
+        elif(year=="RunII"):
+            luminosity="138"
 
         with open("plotConfigs/{0}.json".format(year)) as json_file:
             data = json.load(json_file)
@@ -403,21 +412,21 @@ if __name__ == '__main__':
             printMCYields(data,"pass",year)
             printMCYields(data,"fail",year)
 
-            plotVarStack(data,"H_m_pass__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[50,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
-            plotVarStack(data,"H_m_fail__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[50,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+            plotVarStack(data,"H_m_pass__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_fail__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
 
-            f = r.TFile.Open(data["data_obs"]["file"])
-            print(data["data_obs"]["file"])
-            hTotal = f.Get("data_obs_GammapTnoTriggers_nom")
-            hPass  = f.Get("data_obs_GammapTtriggersAll_nom")
-            hPass.RebinX(5)
-            hTotal.RebinX(5)
-            eff = r.TEfficiency(hPass,hTotal)
-            eff.SetName("trig_eff")
-            #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
-            g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
-            g.cd()
-            eff.Write()
-            g.Close()
+            # f = r.TFile.Open(data["data_obs"]["file"])
+            # print(data["data_obs"]["file"])
+            # hTotal = f.Get("data_obs_GammapTnoTriggers_nom")
+            # hPass  = f.Get("data_obs_GammapTtriggersAll_nom")s
+            # hPass.RebinX(5)
+            # hTotal.RebinX(5)
+            # eff = r.TEfficiency(hPass,hTotal)
+            # eff.SetName("trig_eff")
+            # #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
+            # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
+            # g.cd()
+            # eff.Write()
+            # g.Close()
 
-            plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year))
+            # plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year))

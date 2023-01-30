@@ -1,0 +1,47 @@
+{
+  "SinglePhoton2018A": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/SinglePhoton2018A/"
+  },
+  "SinglePhoton2018B": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/SinglePhoton2018B/"
+  },
+  "SinglePhoton2018C": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/SinglePhoton2018C/"
+  },
+  "SinglePhoton2018D": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/SinglePhoton2018D/"
+  },
+  "ZGamma": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/ZGamma"
+  },
+  "WGamma": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/WGamma"
+  },
+  "GJets200": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/GJets200"
+  },
+  "GJets400": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/GJets400"
+  },
+  "GJets600": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/GJets600"
+  },
+  "TTGJets": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/TTGJets"
+  },
+  "QCD500": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/QCD500"
+  },
+  "QCD700": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/QCD700"
+  },
+  "QCD1000": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/QCD1000"
+  },
+  "QCD1500": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/QCD1500"
+  },
+  "QCD2000": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/QCD2000"
+  }
+}

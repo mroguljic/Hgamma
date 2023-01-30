@@ -1,8 +1,8 @@
 {
-  "SinglePhoton2016APVBver1": {
+  "SinglePhoton2016APVver1B": {
     "dataset":"/SinglePhoton/Run2016B-ver1_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD"
   },
-  "SinglePhoton2016APVBver2": {
+  "SinglePhoton2016APVver2B": {
     "dataset":"/SinglePhoton/Run2016B-ver2_HIPM_UL2016_MiniAODv2_NanoAODv9-v2/NANOAOD"
   },
   "SinglePhoton2016APVC": {

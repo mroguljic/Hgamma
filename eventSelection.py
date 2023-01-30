@@ -81,7 +81,8 @@ def eventSelection(options):
     nProc = a.genEventSumw
 
     CompileCpp("TIMBER/Framework/Hgamma_modules/Hgamma_Functions.cc") 
-    #CompileCpp("TIMBER/Framework/Zbb_modules/helperFunctions.cc") 
+    CompileCpp("TIMBER/Framework/Zbb_modules/Zbb_Functions.cc") 
+    CompileCpp("TIMBER/Framework/Zbb_modules/helperFunctions.cc") 
 
     ptCorrector     = ptCorrectorString(options.variation,isData) 
     massCorrector   = massCorrectorString(options.variation,isData) 
@@ -103,7 +104,7 @@ def eventSelection(options):
     #----------Triggers------------#
     beforeTrigCheckpoint    = a.GetActiveNode()
     if(year=="2016" or year=="2016APV"):
-        triggerList         = ["HLT_Photon200"]
+        triggerList         = ["HLT_Photon175"]
     elif(year=="2017"):
         triggerList         =["HLT_Photon200"]
     elif(year=="2018"):
@@ -138,7 +139,11 @@ def eventSelection(options):
     evtColumns.Add("Gamma_pt","Photon_pt[0]")
     evtColumns.Add("Gamma_eta","Photon_eta[0]")
     evtColumns.Add("Gamma_phi","Photon_phi[0]")
-
+    evtColumns.Add("nEle","nElectrons(nElectron,Electron_cutBased,0,Electron_pt,20,Electron_eta)")
+    #0:fail,1:veto,2:loose,3:medium,4:tight
+    #condition is, cutBased>cut
+    evtColumns.Add("nMu","nMuons(nMuon,Muon_looseId,Muon_pfIsoId,0,Muon_pt,20,Muon_eta)")
+    #1=PFIsoVeryLoose, 2=PFIsoLoose, 3=PFIsoMedium, 4=PFIsoTight, 5=PFIsoVeryTight, 6=PFIsoVeryVeryTight
     a.Apply([evtColumns])
 
     a.Cut("pT","Higgs_pt>300 && Gamma_pt>300")
@@ -146,6 +151,10 @@ def eventSelection(options):
 
     a.Cut("JetPnetMassCut","HiggsPnetMass>50")
     nJetMass = getNweighted(a,isData)
+
+    a.Cut("LeptonVeto","nMu==0 && nEle==0")
+    nLeptonVeto = getNweighted(a,isData)
+
 
     a.Define("pnetHiggs","FatJet_particleNetMD_Xbb[Hidx]/(FatJet_particleNetMD_Xbb[Hidx]+FatJet_particleNetMD_QCD[Hidx])")
 
@@ -206,8 +215,8 @@ def eventSelection(options):
 
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)
 
-    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,nID,npT,nJetMass]
-    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","pass","fail"]#tagging bins will be filled out in template making
+    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,nID,npT,nJetMass,nLeptonVeto]
+    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","Lepton Veto","pass","fail"]#tagging bins will be filled out in template making
     nCutFlowlabels      = len(cutFlowLabels)
     hCutFlow            = ROOT.TH1F('{0}_cutflow'.format(options.process),"Number of events after each cut",nCutFlowlabels,0.5,nCutFlowlabels+0.5)
     for i,label in enumerate(cutFlowLabels):

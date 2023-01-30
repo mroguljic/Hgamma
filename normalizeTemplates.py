@@ -58,9 +58,10 @@ def mergeSamples(inFiles,outFile,regexMatch,regexReplace):
 
 def lumiNormalization(wp="tight",tagger="ParticleNet"):
 
-    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma"]
-    #for year in ['2016','2016APV','2017','2018']:
-    for year in ['2017']:
+    #processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","GJetsHT200","GJetsHT400","GJetsHT600","TTGJets","Hgamma"
+    #,"QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
+    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma","QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
+    for year in ['2016','2016APV','2017','2018']:
         print(year)
         nonScaledDir = "results/templates/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
         lumiScaledDir = "results/templates/{2}/{0}/{1}/scaled/".format(wp,year,tagger)
@@ -79,8 +80,21 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
         GJetsSamples = [lumiScaledDir+f for f in GJetsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
         mergeSamples(GJetsSamples,"{0}/GJets{1}.root".format(lumiScaledDir,year[2:]),"GJets\d+_","GJets_")
 
+        # GJetsHTSamples = ["GJetsHT200.root","GJetsHT400.root","GJetsHT600.root"]
+        # GJetsHTSamples = [lumiScaledDir+f for f in GJetsHTSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        # mergeSamples(GJetsHTSamples,"{0}/GJetsHT{1}.root".format(lumiScaledDir,year[2:]),"GJetsHT\d+_","GJetsHT_")
+
+        QCDSamples = ["QCD500.root","QCD700.root","QCD1000.root","QCD1500.root","QCD2000.root"]
+        QCDSamples = [lumiScaledDir+f for f in QCDSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        mergeSamples(QCDSamples,"{0}/QCD{1}.root".format(lumiScaledDir,year[2:]),"QCD\d+_","QCD_")
+        
+        # ttSamples = ["TTHadronic.root","TTSemileptonic.root"]
+        # ttSamples = [lumiScaledDir+f for f in ttSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        # mergeSamples(ttSamples,"{0}/TTbar{1}.root".format(lumiScaledDir,year[2:]),"TTSemileptonic|TTHadronic","TTbar")
+
+
         SinglePhotonSamples = [nonScaledDir+f for f in os.listdir(nonScaledDir) if (os.path.isfile(os.path.join(nonScaledDir, f)) and "SinglePhoton" in f)]
-        mergeSamples(SinglePhotonSamples,"{0}/SinglePhoton{1}.root".format(lumiScaledDir,year[2:]),"SinglePhoton201[0-9][a-zA-Z]+_","data_obs_")
+        mergeSamples(SinglePhotonSamples,"{0}/SinglePhoton{1}.root".format(lumiScaledDir,year[2:]),"SinglePhoton201[0-9][a-zA-Z0-9]+_","data_obs_")
 
 
 if __name__ == '__main__':
