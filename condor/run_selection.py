@@ -34,11 +34,13 @@ def checkForCongregateResult(outDir,sample):
     return True
 
 def checkIfAlreadyProcessed(fileBase,outDir,sample):
-    varFlag = False
+    if("ZGamma" in sample or "WGamma" in sample or "Hgamma" in sample):
+        varFlag = True
+    else:
+        varFlag = False
 
     if varFlag:
-        #variations  = ["nom","jerUp","jerDown","jesUp","jesDown","jmsUp","jmsDown","jmrUp","jmrDown"] #Let's not run variations for now
-        variations  = ["nom"]
+        variations  = ["nom","jerUp","jerDown","jesUp","jesDown","jmsUp","jmsDown","jmrUp","jmrDown"]
     else:
         variations  = ["nom"]
 
@@ -58,8 +60,11 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
         #Create dir to store jobs and dir to store output
         createDirIfNotExist(os.path.join(sampleJobs_dir, 'input'))
         createDirIfNotExist(os.path.join(sampleJobs_dir, 'output'))
-        createDirIfNotExist(sampleOut_dir)        
-        exeScript = selection_template_data.replace("JOB_DIR",sampleJobs_dir)
+        createDirIfNotExist(sampleOut_dir)
+        if("ZGamma" in sample or "WGamma" in sample or "Hgamma" in sample):
+            exeScript = selection_template.replace("JOB_DIR",sampleJobs_dir)
+        else:
+            exeScript = selection_template_data.replace("JOB_DIR",sampleJobs_dir)
         nPerJob   = nFiles
         open(os.path.join(sampleJobs_dir, 'input', 'run_{}.sh'.format(sample)), 'w').write(exeScript)
         os.system("chmod +x {0}".format(os.path.join(sampleJobs_dir, 'input', 'run_{}.sh'.format(sample))))
@@ -104,7 +109,7 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
 
         if(nToRun!=0 and congregateFlag==False):
             submissionCmds.append("condor_submit {0}".format(os.path.join(sampleJobs_dir, 'input', 'condor_{}.condor'.format(sample))))
-    
+    #For some reason the last submission does not correctly take arguments
     for cmd in submissionCmds:
         print(cmd)
         if(submitFlag):
@@ -115,10 +120,11 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
 def haddResults(outDir):
     os.chdir(outDir)
     directories= [d for d in os.listdir(os.getcwd()) if os.path.isdir(d)]
-    #variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown"]
-    variations = ["nom"]
-
     for d in directories:
+        if("ZGamma" in d or "WGamma" in d or "Hgamma" in d):
+           variations  = ["nom","jerUp","jerDown","jesUp","jesDown","jmsUp","jmsDown","jmrUp","jmrDown"]
+        else:
+           variations  = ["nom"]
         for variation in variations:
             cmd = "hadd {0}_{1}.root {0}/*{1}*root".format(d,variation)
             if not os.path.exists("{0}_{1}.root".format(d,variation)):
@@ -128,19 +134,8 @@ def haddResults(outDir):
         os.system("rm -r {0}".format(d))
             
 
-
-
-def main():
-
+def runYear(year,submit=False):
     import json
-    
-    from argparse import ArgumentParser
-    parser = ArgumentParser()
-    parser.add_argument('-y', '--year', help='Dataset year',default="2016")
-    parser.add_argument('-s', '--submit', help='Submit to condor',default=False)
-    args        = parser.parse_args()
-    year        = args.year
-
     datasets    = "selection_configs/{0}.json".format(year)
     outDir      = "{0}/{1}".format(SELECTION_DIR,year)
     jobsDir     = "{0}/{1}".format(SELECTION_JOB_DIR,year)
@@ -159,11 +154,26 @@ def main():
 
     with open(datasets) as config_file:
         config  = json.load(config_file)
-        nJobs   = create_jobs(config, year=year,out_dir=outDir,jobs_dir=jobsDir,nFiles=filesPerJob,checkInput=checkInputFlag,submitFlag=args.submit)
+        nJobs   = create_jobs(config, year=year,out_dir=outDir,jobs_dir=jobsDir,nFiles=filesPerJob,checkInput=checkInputFlag,submitFlag=submit)
 
     if(nJobs==0):
         print("All files processed, hadding results")
         haddResults(outDir)
+
+
+def main():
+    from argparse import ArgumentParser
+    parser = ArgumentParser()
+    parser.add_argument('-y', '--year', help='Dataset year',default="2016")
+    args   = parser.parse_args()
+
+    if(args.year=="RunII"):
+        years=["2016APV","2016","2017","2018"]
+    else:
+        years = [args.year]
+    
+    for year in years:
+        runYear(year,submit=False)
                     
 
             

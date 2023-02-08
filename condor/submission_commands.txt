@@ -7,6 +7,7 @@ python run_skim.py -c skim_configs/2016/data.json -y 2016
 python run_skim.py -c skim_configs/2017/data.json -y 2017
 python run_skim.py -c skim_configs/2018/data.json -y 2018
 
+python run_selection.py -y RunII
 python run_selection.py -y 2016APV
 python run_selection.py -y 2016
 python run_selection.py -y 2017
