@@ -8,6 +8,4 @@ condor/template_jobs/
 misc/
 results/
 snapshot_sig.py
-templateCreation_multipleWps.py
-templateMaker_multipleWps.py
 *root
