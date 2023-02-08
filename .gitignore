@@ -1,0 +1,13 @@
+.DS_Store
+._.DS_Store
+condor/__pycache__/
+condor/run_skim_privateSignal.py
+condor/selection_jobs/
+condor/skim_jobs/
+condor/template_jobs/
+misc/
+results/
+snapshot_sig.py
+templateCreation_multipleWps.py
+templateMaker_multipleWps.py
+*root
