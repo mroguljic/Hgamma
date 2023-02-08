@@ -96,6 +96,24 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
         SinglePhotonSamples = [nonScaledDir+f for f in os.listdir(nonScaledDir) if (os.path.isfile(os.path.join(nonScaledDir, f)) and "SinglePhoton" in f)]
         mergeSamples(SinglePhotonSamples,"{0}/SinglePhoton{1}.root".format(lumiScaledDir,year[2:]),"SinglePhoton201[0-9][a-zA-Z0-9]+_","data_obs_")
 
+def mergeRunII(wp,tagger):
+    lumiScaledDir = "results/templates/{0}/{1}".format(tagger,wp)
+    runIIDir      = "results/templates/{0}/{1}/RunII/scaled/".format(tagger,wp)
+    if not os.path.exists(runIIDir):
+        os.makedirs(runIIDir)
+    os.system("hadd -f {0}/SinglePhoton.root {1}/201*/scaled/SinglePhoton*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ZGamma.root {1}/201*/scaled/ZGamma*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WGamma.root {1}/201*/scaled/WGamma*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/GJets.root {1}/201*/scaled/GJets1*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/TTGJets.root {1}/201*/scaled/TTGJets.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/QCD.root {1}/201*/scaled/QCD1?.root {1}/201*/scaled/QCD1?APV.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/Hgamma.root {1}/201*/scaled/Hgamma.root".format(runIIDir,lumiScaledDir))
+
 
 if __name__ == '__main__':
-    lumiNormalization(wp="tight",tagger="/")
+    #lumiNormalization(wp="tight",tagger="/")
+    lumiNormalization(wp="medium",tagger="/")
+    #lumiNormalization(wp="loose",tagger="/")
+    #lumiNormalization(wp="tight_medium",tagger="/")
+    mergeRunII("medium","/")
+    #mergeRunII("tight_medium","/")
