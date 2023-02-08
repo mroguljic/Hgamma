@@ -24,8 +24,9 @@ if("2018/" in iDir):
 variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown"]
 for variation in variations:
     if(variation!="nom"):
-        #Will run variations later
-        continue           
+        if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample):
+            #Running variations only on some processes
+            continue           
 
     inputTag = variation
 

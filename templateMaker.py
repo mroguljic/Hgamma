@@ -141,16 +141,21 @@ for region,cut in regionDefs:
 
     if nomTreeFlag:
         HmassHist   = r.TH1F('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200)
+        HmassPtHist = r.TH2F('{0}_H_m_pT_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000)
         HptHist     = a.DataFrame.Histo1D(('{0}_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight__nominal")
         GammaptHist = a.DataFrame.Histo1D(('{0}_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight__nominal")
         templates   = a.MakeTemplateHistos(HmassHist,[massVar])
+        templates2D = a.MakeTemplateHistos(HmassPtHist,[massVar,"Higgs_pt"])
         histGroups.append(templates)
+        histGroups.append(templates2D)
         histos.append(HptHist)
         histos.append(GammaptHist)
     else:
         #For jms/jmr/jes/jer trees, we don't need to calculate uncertainties on nominal trees
-        template = a.DataFrame.Histo1D(('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight__nominal")
+        template   = a.DataFrame.Histo1D(('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight__nominal")
+        template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight__nominal")
         histos.append(template)
+        histos.append(template2D)
 
     regionYields[region] = getNweighted(a,isData)
 
