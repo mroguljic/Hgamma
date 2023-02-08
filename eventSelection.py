@@ -45,9 +45,13 @@ def massCorrectorString(variation,isData):
         elif(variation=="jerDown"):
             jetCorrector  = '{FatJet_JES_nom,FatJet_JER_down,FatJet_JMS_nom,FatJet_JMR_nom}'
         elif(variation=="jmsUp"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_up,FatJet_JMR_nom}'
+            #jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_up,FatJet_JMR_nom}'
+            #Applying a custom jms uncertainty in the event loop
+            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
         elif(variation=="jmsDown"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_down,FatJet_JMR_nom}'
+            #Applying a custom jms uncertainty in the event loop
+            #jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_down,FatJet_JMR_nom}'
+            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
         elif(variation=="jmrUp"):
             jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_up}'
         elif(variation=="jmrDown"):
@@ -84,6 +88,18 @@ def eventSelection(options):
     CompileCpp("TIMBER/Framework/Zbb_modules/Zbb_Functions.cc") 
     CompileCpp("TIMBER/Framework/Zbb_modules/helperFunctions.cc") 
 
+    if(options.year=="2016APV"):
+       deepCsvM    = 0.6001
+    elif(options.year=="2016"):
+       deepCsvM    = 0.5847
+    elif(options.year=="2017"):
+       deepCsvM    = 0.4506
+    elif(options.year=="2018"):
+       deepCsvM    = 0.4168 
+    else:
+        print("Year not supported")
+        sys.exit()
+
     ptCorrector     = ptCorrectorString(options.variation,isData) 
     massCorrector   = massCorrectorString(options.variation,isData) 
 
@@ -99,7 +115,14 @@ def eventSelection(options):
     if MetFiltersString:#RDF crashes if METstring is empty
         a.Cut("MET_Filters",MetFiltersString)
     #------------------------------#
-
+    
+    #b-tag reshaping
+    if(options.variation == "sfDown"):
+        sfVar = 1
+    elif(options.variation=="sfUp"):
+        sfVar = 2
+    else:
+        sfVar = 0 
 
     #----------Triggers------------#
     beforeTrigCheckpoint    = a.GetActiveNode()
@@ -135,7 +158,14 @@ def eventSelection(options):
     evtColumns.Add("Higgs_eta","FatJet_eta[Hidx]")
     evtColumns.Add("Higgs_phi","FatJet_phi[Hidx]")
     evtColumns.Add("HiggsSDMass",'FatJet_msoftdrop_corr[Hidx]')
-    evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]')
+    
+    #Adding custom jms uncertainty of 2%
+    if(options.variation=="jmsUp"):
+        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]*1.02')
+    elif(options.variation=="jmsDown"):
+        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]*0.98')
+    else:
+        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]')
     evtColumns.Add("Gamma_pt","Photon_pt[0]")
     evtColumns.Add("Gamma_eta","Photon_eta[0]")
     evtColumns.Add("Gamma_phi","Photon_phi[0]")
@@ -144,6 +174,17 @@ def eventSelection(options):
     #condition is, cutBased>cut
     evtColumns.Add("nMu","nMuons(nMuon,Muon_looseId,Muon_pfIsoId,0,Muon_pt,20,Muon_eta)")
     #1=PFIsoVeryLoose, 2=PFIsoLoose, 3=PFIsoMedium, 4=PFIsoTight, 5=PFIsoVeryTight, 6=PFIsoVeryVeryTight
+
+    if(isData):
+        evtColumns.Add("btagDisc",'Jet_btagDeepB') 
+    else:
+        CompileCpp('TIMBER/Framework/Zbb_modules/AK4Btag_SF.cc')
+        print('AK4Btag_SF ak4SF = AK4Btag_SF("{0}", "DeepCSV", "reshaping");'.format(options.year))
+        CompileCpp('AK4Btag_SF ak4SF = AK4Btag_SF("{0}", "DeepCSV", "reshaping");'.format(options.year))
+        evtColumns.Add("btagDisc",'ak4SF.evalCollection(nJet,Jet_pt, Jet_eta, Jet_hadronFlavour,Jet_btagDeepB,{0})'.format(sfVar)) 
+    evtColumns.Add("topVetoFlag","topVeto(Higgs_eta,Higgs_phi,nJet,Jet_eta,{0},Jet_phi,Jet_pt,btagDisc,{1})".format(2.4,deepCsvM))
+
+
     a.Apply([evtColumns])
 
     a.Cut("pT","Higgs_pt>300 && Gamma_pt>300")
@@ -155,6 +196,9 @@ def eventSelection(options):
     a.Cut("LeptonVeto","nMu==0 && nEle==0")
     nLeptonVeto = getNweighted(a,isData)
 
+
+    a.Cut("topVeto","topVetoFlag==0")
+    nTopVeto = getNweighted(a,isData)
 
     a.Define("pnetHiggs","FatJet_particleNetMD_Xbb[Hidx]/(FatJet_particleNetMD_Xbb[Hidx]+FatJet_particleNetMD_QCD[Hidx])")
 
@@ -215,8 +259,8 @@ def eventSelection(options):
 
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)
 
-    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,nID,npT,nJetMass,nLeptonVeto]
-    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","Lepton Veto","pass","fail"]#tagging bins will be filled out in template making
+    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,nID,npT,nJetMass,nLeptonVeto,nTopVeto]
+    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","Lepton Veto","Top Veto","pass","fail"]#tagging bins will be filled out in template making
     nCutFlowlabels      = len(cutFlowLabels)
     hCutFlow            = ROOT.TH1F('{0}_cutflow'.format(options.process),"Number of events after each cut",nCutFlowlabels,0.5,nCutFlowlabels+0.5)
     for i,label in enumerate(cutFlowLabels):
