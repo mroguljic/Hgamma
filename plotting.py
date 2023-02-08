@@ -80,7 +80,7 @@ def mergeLoMassBins(hist,edges):
 def blindHiggsMass(hist):
     for i in range(1,hist.GetNbinsX()+1):
         binCenter = hist.GetBinCenter(i)
-        if binCenter>100 and binCenter<150:
+        if binCenter>115 and binCenter<145:
             hist.SetBinContent(i,0)
     return hist
 
@@ -270,6 +270,10 @@ def calculatePull(hData,dataErrors,hTotBkg,uncBand):
         if(dataYield>=mcYield):
             dataErr = dataErrors[0][i]#ErrorLo
             mcErr   = uncBand[1][i]-mcYield#ErrorUp
+        elif(dataYield==0):
+            pull = 0.
+            pulls.append(pull)
+            continue
         else:
             dataErr = dataErrors[1][i]#ErrorUp
             mcErr   = uncBand[0][i]-mcYield#ErrorLo
@@ -280,20 +284,26 @@ def calculatePull(hData,dataErrors,hTotBkg,uncBand):
 
     return np.array(pulls)
 
-def divideByBinWidth(h):
+def divideByBinWidth(h,divideFlag=True):
     hist, edges = hist2array(h,return_edges=True)
-    newHist     = []
-    for i in range(len(hist)):
-        binWidth    = edges[0][i+1]-edges[0][i]
-        newHist.append(hist[i]/binWidth)
 
-    return newHist,edges
+    if not divideFlag:
+        return hist,edges
+
+    else:
+        newHist     = []
+        for i in range(len(hist)):
+            binWidth    = edges[0][i+1]-edges[0][i]
+            newHist.append(hist[i]/binWidth)
+
+        return newHist,edges
 
 
 
-def plotShapes(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],yRange=[],projectionText=""):
-    dataErrors      = getPoissonErrors(hData,binWidthDivision=True)
-    hData, edges    = divideByBinWidth(hData)
+def plotShapes(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],yRange=[],projectionText="",binWidthDivision=True):
+    dataErrors      = getPoissonErrors(hData,binWidthDivision=binWidthDivision)
+    hData, edges    = divideByBinWidth(hData,divideFlag=binWidthDivision)
+
     centresData     = (edges[0][:-1] + edges[0][1:])/2.#Bin centres
     xerrorsData     = []
 
@@ -303,7 +313,7 @@ def plotShapes(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],y
 
     histosMC        = []
     for h in hMC:
-        histosMC.append(divideByBinWidth(h)[0])
+        histosMC.append(divideByBinWidth(h,divideFlag=binWidthDivision)[0])
 
 
     plt.style.use([hep.style.CMS])
@@ -317,8 +327,12 @@ def plotShapes(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],y
 
     for i in range(len(uncBand[0])):
         binWidth            = edges[0][i+1]-edges[0][i]
-        uncBand[0][i]       = uncBand[0][i]/binWidth
-        uncBand[1][i]       = uncBand[1][i]/binWidth
+        if(binWidthDivision):
+            uncBand[0][i]       = uncBand[0][i]/binWidth
+            uncBand[1][i]       = uncBand[1][i]/binWidth
+        else:
+            uncBand[0][i]       = uncBand[0][i]
+            uncBand[1][i]       = uncBand[1][i]
 
     uncBandLow = np.append(uncBand[0],[0],axis=0)
     uncBandHi  = np.append(uncBand[1],[0],axis=0)#Hack to get the last bin uncertainty to plot, since we're using step="post"
@@ -326,7 +340,10 @@ def plotShapes(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],y
     plt.fill_between(edges[0],uncBandLow,uncBandHi,facecolor="none", hatch="xxx", edgecolor="grey", linewidth=0.0,step="post")
 
     axs[0].legend()
-    plt.ylabel("Events/GeV",horizontalalignment='right', y=1.0)
+    if(binWidthDivision):
+        plt.ylabel("Events/GeV",horizontalalignment='right', y=1.0)
+    else:
+        plt.ylabel("Events",horizontalalignment='right', y=1.0)
     axs[1].set_ylabel("Pulls")
 
     if(xRange):
@@ -346,9 +363,9 @@ def plotShapes(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],y
     elif("18" in outputFile):
         lumi = 59.8
     else:
-        lumi = "NaN"
+        lumi = 138
 
-    lumiText = str(lumi)+ "$ fb^{-1} (13 TeV)$"    
+    lumiText = str(lumi)+ " $fb^{-1} (13 TeV)$"    
     hep.cms.lumitext(lumiText)
     hep.cms.text("WiP",loc=0)
     plt.legend(loc=1,ncol=2)
@@ -386,39 +403,140 @@ def printMCYields(data,region,year):
         hist    = f.Get("{0}_H_m_{1}__nominal".format(sample,region))
         print("{0:10}\t{1:.0f}".format(sample,hist.Integral()))
 
+def get2DPostfitPlot(file,process,region,prefit=False):
+    f       = r.TFile.Open(file)
+    if prefit:
+        fitStatus = "prefit"
+    else:
+        fitStatus = "postfit"
+    hLow    = f.Get("{0}_LOW_{2}/{1}".format(region,process,fitStatus))
+    hSig    = f.Get("{0}_SIG_{2}/{1}".format(region,process,fitStatus))
+    hHigh   = f.Get("{0}_HIGH_{2}/{1}".format(region,process,fitStatus))
+    h2      = merge_low_sig_high(hLow,hSig,hHigh,hName="h2_{0}_{1}".format(process,region))
+    h2.SetDirectory(0)
+    return h2
+    
+def get_binning_x(hLow,hSig,hHigh):
+    bins = []
+    for i in range(1,hLow.GetNbinsX()+1):
+        bins.append(hLow.GetXaxis().GetBinLowEdge(i))
+    for i in range(1,hSig.GetNbinsX()+1):
+        bins.append(hSig.GetXaxis().GetBinLowEdge(i))
+    for i in range(1,hHigh.GetNbinsX()+2):#low edge of overflow is high edge of last bin
+        bins.append(hHigh.GetXaxis().GetBinLowEdge(i))
+    bins = np.array(bins,dtype='float64')
+    return bins
+
+def get_binning_y(hLow,hSig,hHigh):
+    #histos should have same binning in Y
+    bins = []
+    for i in range(1,hLow.GetNbinsY()+2):
+        bins.append(hLow.GetYaxis().GetBinLowEdge(i))
+    bins = np.array(bins,dtype='float64')
+    return bins
+def merge_low_sig_high(hLow,hSig,hHigh,hName="temp"):
+    n_x_low     = hLow.GetNbinsX()
+    n_x_sig     = hSig.GetNbinsX()
+    n_x_high    = hHigh.GetNbinsX()
+    n_x         = n_x_low + n_x_sig + n_x_high
+    n_y         = hLow.GetNbinsY()#assumes Y bins are the same
+    bins_x      = get_binning_x(hLow,hSig,hHigh)
+    bins_y      = get_binning_y(hLow,hSig,hHigh)
+    h_res       = r.TH2F(hName,"",n_x,bins_x,n_y,bins_y)
+    for i in range(1,n_x_low+1):
+        for j in range(1,n_y+1):
+            h_res.SetBinContent(i+0,j,hLow.GetBinContent(i,j))
+            h_res.SetBinError(i+0,j,hLow.GetBinError(i,j))
+
+    for i in range(1,n_x_sig+1):
+        for j in range(1,n_y+1):
+            h_res.SetBinContent(i+n_x_low,j,hSig.GetBinContent(i,j))
+            h_res.SetBinError(i+n_x_low,j,hSig.GetBinError(i,j))
+
+    for i in range(1,n_x_high+1):
+        for j in range(1,n_y+1):
+            h_res.SetBinContent(i+n_x_sig+n_x_low,j,hHigh.GetBinContent(i,j))
+            h_res.SetBinError(i+n_x_sig+n_x_low,j,hHigh.GetBinError(i,j))
+    return h_res
+
+def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidthDivision=True):
+
+    if(region=="pass"):
+        labels              = ["Data","Non-resonant","W+Gamma","Z+Gamma","H+Gamma"]
+        tags                = ["data_obs","qcd","WGamma","ZGamma","Hgamma"]
+        colors              = ["black","deepskyblue","slateblue","blue","red"]
+    else:
+        labels              = ["Data","Non-resonant","W+Gamma","Z+Gamma"]
+        tags                = ["data_obs","qcd","WGamma","ZGamma"]
+        colors              = ["black","deepskyblue","slateblue","blue"]
+
+    if(prefitTag):
+        outFile = "prefit"
+    else:
+        outFile = "postfit"
+
+
+    twoDShapes  = []
+
+    dirRegion   = region
+    polyOrder   = odir.split("/")[-2]
+
+    #Merge sliced histograms
+    for tag in tags:
+        if(tag=="qcd" and region=="pass"):
+            tag     = tag+"_"+polyOrder
+        twoDShape   = get2DPostfitPlot(postfitShapesFile,tag,dirRegion,prefit=prefitTag)
+        twoDShapes.append(twoDShape)
+        totalProcs  = get2DPostfitPlot(postfitShapesFile,"TotalProcs".format(region),dirRegion,prefit=prefitTag)
+    
+    projections         = []
+    for j,twoDShape in enumerate(twoDShapes):
+        proj            = twoDShape.ProjectionX(tags[j]+"_projx")
+        if(tags[j]=="data_obs" and blind):
+            proj = blindHiggsMass(proj)
+        projections.append(proj)
+    totalProcs_proj     = totalProcs.ProjectionX("totalprocs_projx")
+    projections.append(totalProcs_proj)
+    uncBand_proj        = getUncBand(totalProcs_proj)
+
+    if binWidthDivision:
+        plotName = "{0}/{1}_{2}_rescaled.png".format(odir,outFile,region)
+    else:
+        plotName = "{0}/{1}_{2}.png".format(odir,outFile,region)
+    plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]",plotName,xRange=[60,200],binWidthDivision=binWidthDivision)
 
 if __name__ == '__main__':
 
-
-    #for year in ["2016","2016APV","2017","2018"]:
-    for year in ["RunII"]:
-        odir = "results/plots/tight/{0}/".format(year)
-        Path(odir).mkdir(parents=True, exist_ok=True)
+    # wp = "medium"
+    # # for year in ["2016","2016APV","2017","2018","RunII"]:
+    # for year in ["2017","RunII"]:
+    #     odir = "results/plots/{0}/{1}/".format(wp,year)
+    #     Path(odir).mkdir(parents=True, exist_ok=True)
         
-        if(year=="2016APV"):
-            luminosity="19.5"
-        elif(year=="2016"):
-            luminosity="16.8"
-        elif(year=="2017"):
-            luminosity="41.5"
-        elif(year=="2018"):
-            luminosity="59.8"
-        elif(year=="RunII"):
-            luminosity="138"
+    #     if(year=="2016APV"):
+    #         luminosity="19.5"
+    #     elif(year=="2016"):
+    #         luminosity="16.8"
+    #     elif(year=="2017"):
+    #         luminosity="41.5"
+    #     elif(year=="2018"):
+    #         luminosity="59.8"
+    #     elif(year=="RunII"):
+    #         luminosity="138"
 
-        with open("plotConfigs/{0}.json".format(year)) as json_file:
-            data = json.load(json_file)
+    #     with open("plotConfigs/{0}_{1}.json".format(year,wp)) as json_file:
+    #         data = json.load(json_file)
 
-            printMCYields(data,"pass",year)
-            printMCYields(data,"fail",year)
+    #         printMCYields(data,"pass",year)
+    #         printMCYields(data,"fail",year)
 
-            plotVarStack(data,"H_m_pass__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
-            plotVarStack(data,"H_m_fail__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+    #         plotVarStack(data,"H_m_pass__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+    #         plotVarStack(data,"H_m_fail__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
 
             # f = r.TFile.Open(data["data_obs"]["file"])
             # print(data["data_obs"]["file"])
             # hTotal = f.Get("data_obs_GammapTnoTriggers_nom")
-            # hPass  = f.Get("data_obs_GammapTtriggersAll_nom")s
+            # hPass  = f.Get("data_obs_GammapTtriggersAll_nom")
             # hPass.RebinX(5)
             # hTotal.RebinX(5)
             # eff = r.TEfficiency(hPass,hTotal)
@@ -430,3 +548,39 @@ if __name__ == '__main__':
             # g.Close()
 
             # plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year))
+
+
+    # #Postfit T
+    # cmsswArea       = "../CMSSW_10_6_14/src/"
+    # polyOrder       = "2"
+    # workingAreas    = ["tight"]
+    # for workingArea in workingAreas:
+    #     baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
+    #     fitFile         = baseDir+"postfitshapes_b.root"
+    #     Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
+
+    #     try:
+    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
+    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder))
+    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
+    #     except:
+    #        print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
+           
+    #Postfit M
+    cmsswArea       = "../CMSSW_10_6_14/src/"
+    polyOrder       = "3"
+    workingAreas    = ["medium"]
+    for workingArea in workingAreas:
+        baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
+        fitFile         = baseDir+"postfitshapes_b.root"
+        Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
+
+        try:
+            plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+            plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
+            plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder))
+            plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
+        except:
+           print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
+           
