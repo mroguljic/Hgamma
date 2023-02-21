@@ -22,6 +22,20 @@ def getNCut(analyzer,cut,cutName):
     analyzer.SetActiveNode(beforeNode)
     return nCut
 
+def getTaggingEfficiencies(analyzer,wpM,wpT):
+    beforeNode = analyzer.GetActiveNode()
+    nTot = analyzer.DataFrame.Sum("genWeight").GetValue()
+    analyzer.Cut("Eff_M_cut","pnetHiggs>{0} && pnetHiggs<{1}".format(wpM,wpT))
+    nM   = analyzer.DataFrame.Sum("genWeight").GetValue()
+    analyzer.SetActiveNode(beforeNode)
+    analyzer.Cut("Eff_T_cut","pnetHiggs>{0}".format(wpT))
+    nT   = analyzer.DataFrame.Sum("genWeight").GetValue()
+    effM = nM/nTot
+    effT = nT/nTot
+    analyzer.SetActiveNode(beforeNode)
+    return effM, effT
+
+
 parser = OptionParser()
 
 parser.add_option('-i', '--input', metavar='IFILE', type='string', action='store',
@@ -68,7 +82,7 @@ if not variation in iFile:
             iFile = iFile.replace(".root","_nom.root")
 
 
-if "nom" in iFile:
+if variation=="nom":
     #Nominal tree processing will run all variations which do not require separate selection
     nomTreeFlag = True
 else:
@@ -92,6 +106,29 @@ else:
     print("Running on MC")
     isData=False
 
+#PNet SF part
+CompileCpp('TIMBER/Framework/src/btagSFHandler.cc')
+if(variation=="pnetUp"):
+    pnetVar=2
+elif(variation=="pnetDown"):
+    pnetVar=1
+else:
+    pnetVar = 0
+
+if("Hgamma" in options.process or "ZGamma" in options.process):
+    eff_M, eff_T = getTaggingEfficiencies(a,taggerWpLo,taggerWpUp)
+    print("{0} ParticleNet (M,T) efficiencies: ({1:.2f},{2:.2f})".format(options.process,eff_M,eff_T))
+else:
+    eff_M = 0.1
+    eff_T = 0.1#placeholders, not needed if not applying pnet SF
+
+CompileCpp('btagSFHandler btagHandler = btagSFHandler({%f,%f},{%f,%f},%s,%i);' %(taggerWpLo,taggerWpUp,eff_M,eff_T,'"{0}"'.format(year),pnetVar))#wps, efficiencies, year, var
+a.Define("TaggerCat","btagHandler.createTaggingCategories(pnetHiggs)")
+
+if("Hgamma" in options.process or "ZGamma" in options.process):
+    a.Define("ScaledPnet","btagHandler.updateTaggingCategories(TaggerCat,Higgs_pt)")
+else:
+    a.Define("ScaledPnet","TaggerCat")
 
 if isData:
     a.Define("genWeight","1")
@@ -120,17 +157,9 @@ if not isData:
     #triggerCorr = Correction('trig',"TIMBER/Framework/Zbb_modules/TrigEff.cc",constructor=["{0}".format(trigFile),"trig_eff"],corrtype='weight')
     #a.AddCorrection(triggerCorr, evalArgs={'xval':'pt_for_trig','yval':0,'zval':0})
 
-
-    # ISRcorr    = genWCorr.Clone("ISRunc",newMainFunc="evalUncert",newType="uncert")
-    # FSRcorr    = genWCorr.Clone("FSRunc",newMainFunc="evalUncert",newType="uncert")
-    # a.AddCorrection(NLOqcdCorr, evalArgs={'xval':'genVpt_rescaled','yval':0,'zval':0})
-    # a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genVpt_rescaled','yval':0,'zval':0})
-    # a.AddCorrection(ISRcorr, evalArgs={'valUp':'ISR__up','valDown':'ISR__down'})
-    # a.AddCorrection(FSRcorr, evalArgs={'valUp':'FSR__up','valDown':'FSR__down'})
-
 a.MakeWeightCols()
 
-regionDefs      = [("T","{1}>{0}".format(taggerWpUp, taggerBranch)),("F","{1}<{0}".format(taggerWpLo, taggerBranch)),("M","{2}>{1} && {2}<{0}".format(taggerWpUp,taggerWpLo, taggerBranch))]
+regionDefs      = [("T","ScaledPnet==2"),("F","ScaledPnet==0"),("M","ScaledPnet==1")]
 regionYields    = {}
 
 for region,cut in regionDefs:

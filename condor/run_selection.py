@@ -110,6 +110,7 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
         if(nToRun!=0 and congregateFlag==False):
             submissionCmds.append("condor_submit {0}".format(os.path.join(sampleJobs_dir, 'input', 'condor_{}.condor'.format(sample))))
     #For some reason the last submission does not correctly take arguments
+    #Needs to be submitted to condor manually from shell
     for cmd in submissionCmds:
         print(cmd)
         if(submitFlag):

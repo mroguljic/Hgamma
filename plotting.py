@@ -507,31 +507,31 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
 
 if __name__ == '__main__':
 
-    # wp = "medium"
-    # # for year in ["2016","2016APV","2017","2018","RunII"]:
-    # for year in ["2017","RunII"]:
-    #     odir = "results/plots/{0}/{1}/".format(wp,year)
-    #     Path(odir).mkdir(parents=True, exist_ok=True)
+    wp = "medium"
+    # for year in ["2016","2016APV","2017","2018","RunII"]:
+    for year in ["RunII"]:
+        odir = "results/plots/{0}/{1}/".format(wp,year)
+        Path(odir).mkdir(parents=True, exist_ok=True)
         
-    #     if(year=="2016APV"):
-    #         luminosity="19.5"
-    #     elif(year=="2016"):
-    #         luminosity="16.8"
-    #     elif(year=="2017"):
-    #         luminosity="41.5"
-    #     elif(year=="2018"):
-    #         luminosity="59.8"
-    #     elif(year=="RunII"):
-    #         luminosity="138"
+        if(year=="2016APV"):
+            luminosity="19.5"
+        elif(year=="2016"):
+            luminosity="16.8"
+        elif(year=="2017"):
+            luminosity="41.5"
+        elif(year=="2018"):
+            luminosity="59.8"
+        elif(year=="RunII"):
+            luminosity="138"
 
-    #     with open("plotConfigs/{0}_{1}.json".format(year,wp)) as json_file:
-    #         data = json.load(json_file)
+        with open("plotConfigs/{0}_{1}.json".format(year,wp)) as json_file:
+            data = json.load(json_file)
 
-    #         printMCYields(data,"pass",year)
-    #         printMCYields(data,"fail",year)
+            printMCYields(data,"pass",year)
+            printMCYields(data,"fail",year)
 
-    #         plotVarStack(data,"H_m_pass__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
-    #         plotVarStack(data,"H_m_fail__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+            plotVarStack(data,"H_m_pass__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_fail__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
 
             # f = r.TFile.Open(data["data_obs"]["file"])
             # print(data["data_obs"]["file"])
@@ -567,20 +567,20 @@ if __name__ == '__main__':
     #     except:
     #        print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
            
-    #Postfit M
-    cmsswArea       = "../CMSSW_10_6_14/src/"
-    polyOrder       = "3"
-    workingAreas    = ["medium"]
-    for workingArea in workingAreas:
-        baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
-        fitFile         = baseDir+"postfitshapes_b.root"
-        Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
+    # #Postfit M
+    # cmsswArea       = "../CMSSW_10_6_14/src/"
+    # polyOrder       = "3"
+    # workingAreas    = ["medium"]
+    # for workingArea in workingAreas:
+    #     baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
+    #     fitFile         = baseDir+"postfitshapes_b.root"
+    #     Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
 
-        try:
-            plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
-            plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
-            plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder))
-            plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
-        except:
-           print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
-           
+    #     try:
+    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
+    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder))
+    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
+    #     except:
+    #        print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
+    #        

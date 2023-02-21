@@ -21,7 +21,7 @@ r.gROOT.SetBatch(True)
 r.gStyle.SetOptFit(111)
 
 
-def plotTriggerEff(hPass,hTotal,year,luminosity,outFile,xlabel="$p_{T}$ [GeV]",ylabel="Trigger efficiency / 10 GeV"):
+def plotTriggerEff(hPass,hTotal,year,luminosity,outFile,xlabel="Photon $p_{T}$ [GeV]",ylabel="Trigger efficiency / 10 GeV"):
     TEff   = r.TEfficiency(hPass,hTotal)
     effs   = []
     errsUp = []
@@ -196,6 +196,81 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
     hep.histplot(dataMCRatio,edges[0],ax=axs[1],linewidth=1,histtype="step",edgecolor='red')
     axs[1].axhline(y=1.0, color="grey",linestyle="--")
 
+    plt.tight_layout()
+    print("Saving {0}".format(outFile))
+    plt.savefig(outFile)
+    plt.savefig(outFile.replace(".png",".pdf"))
+    plt.cla()
+    plt.clf()
+
+
+def plotVarStackMC(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",mergeMassBins=False):
+    histos  = []
+    labels  = []
+    edges   = []
+    colors  = []
+    histosSig  = []#we're assuming only one signal dataset
+    edgesSig   = []#it's still kept in array (with one element) to be similar to other processes
+    labelsSig  = []
+    colorsSig  = []
+
+    data = sorted(data.items(), key=lambda x: x[1]["order"])#VERY HANDY, reads samples in order
+    for sample, sample_cfg in data:
+        if("singlephoton" in sample.lower() or "data" in sample.lower()):
+            continue
+        if("hgamma" in sample.lower()):
+            sigFlag  = True
+        else:
+            sigFlag  = False
+
+        tempFile = r.TFile.Open(sample_cfg["file"])
+        #print("Opening ", sample_cfg["file"])
+        h = tempFile.Get("{0}_{1}".format(sample,var))
+        h.RebinX(rebinX)
+        hist, edges = hist2array(h,return_edges=True)
+        if(mergeMassBins):
+            hist, edges = mergeLoMassBins(hist,edges[0])
+        if sigFlag:
+            histosSig.append(hist)
+            edgesSig.append(edges[0])
+            labelsSig.append(sample_cfg["label"])
+            colorsSig.append(sample_cfg["color"])
+            continue            
+        else:
+            histos.append(hist)
+            edges.append(edges[0])
+            labels.append(sample_cfg["label"])
+            colors.append(sample_cfg["color"])
+            if(sample_cfg["label"]=="ttbar+Gamma"):
+                labels[-1]=r"t$\bar{t}+Gamma$"#json restrictions workaround
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+    plt.sca(ax)
+
+    if(mergeMassBins):
+        for i in range(len(edges[0])-1):
+            xerror = (edges[0][i+1]-edges[0][i])/2.
+            xerrorsData.append(xerror)
+    #--------------------------#
+    hep.histplot(histos,edges[0],stack=True,ax=ax,label=labels,linewidth=1,histtype="fill",facecolor=colors,edgecolor='black')
+    hep.histplot(histosSig,edges[0],stack=False,ax=ax,label=labelsSig,linewidth=3,histtype="step",edgecolor=colorsSig)
+    if(log):
+        ax.set_yscale("log")
+    ax.legend()
+    ax.set_ylabel(yTitle)
+    ax.set_xlabel(xTitle)
+    plt.ylabel(yTitle,horizontalalignment='right', y=1.0)
+    
+    if(yRange):
+        ax.set_ylim(yRange)
+    if(xRange):
+        ax.set_xlim(xRange)
+    lumiText = luminosity + " $fb^{-1}\ (13 TeV)$"
+    hep.cms.lumitext(text=lumiText, ax=ax, fontname=None, fontsize=None)
+    hep.cms.text("WiP",loc=0)
+    plt.legend(loc="best",ncol=2,handletextpad=0.3)#loc = 'best'
+    
     plt.tight_layout()
     print("Saving {0}".format(outFile))
     plt.savefig(outFile)
@@ -461,7 +536,7 @@ def merge_low_sig_high(hLow,hSig,hHigh,hName="temp"):
 
 def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidthDivision=True):
 
-    if(region=="pass"):
+    if(region=="pass" or region=="T" or region=="M"):
         labels              = ["Data","Non-resonant","W+Gamma","Z+Gamma","H+Gamma"]
         tags                = ["data_obs","qcd","WGamma","ZGamma","Hgamma"]
         colors              = ["black","deepskyblue","slateblue","blue","red"]
@@ -483,7 +558,7 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
 
     #Merge sliced histograms
     for tag in tags:
-        if(tag=="qcd" and region=="pass"):
+        if(tag=="qcd" and (region=="pass" or region=="T" or region=="M")):
             tag     = tag+"_"+polyOrder
         twoDShape   = get2DPostfitPlot(postfitShapesFile,tag,dirRegion,prefit=prefitTag)
         twoDShapes.append(twoDShape)
@@ -503,29 +578,72 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
         plotName = "{0}/{1}_{2}_rescaled.png".format(odir,outFile,region)
     else:
         plotName = "{0}/{1}_{2}.png".format(odir,outFile,region)
-    plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]",plotName,xRange=[60,200],binWidthDivision=binWidthDivision)
+    if binWidthDivision:
+        plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]",plotName,xRange=[60,200],yRange=[0,20],binWidthDivision=binWidthDivision)
+    else:
+        plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]",plotName,xRange=[60,200],binWidthDivision=binWidthDivision)
 
 if __name__ == '__main__':
 
-    wp = "tight_medium"
-    # for year in ["2016","2016APV","2017","2018","RunII"]:
-    for year in ["RunII"]:
-        odir = "results/plots/{0}/{1}/".format(wp,year)
-        Path(odir).mkdir(parents=True, exist_ok=True)
+    # wp = "tight_medium"
+    # # for year in ["2016","2016APV","2017","2018","RunII"]:
+    # for year in ["RunII"]:
+    #     odir = "results/plots/{0}/{1}/".format(wp,year)
+    #     Path(odir).mkdir(parents=True, exist_ok=True)
         
-        if(year=="2016APV"):
-            luminosity="19.5"
-        elif(year=="2016"):
-            luminosity="16.8"
-        elif(year=="2017"):
-            luminosity="41.5"
-        elif(year=="2018"):
-            luminosity="59.8"
-        elif(year=="RunII"):
-            luminosity="138"
+    #     if(year=="2016APV"):
+    #         luminosity="19.5"
+    #     elif(year=="2016"):
+    #         luminosity="16.8"
+    #     elif(year=="2017"):
+    #         luminosity="41.5"
+    #     elif(year=="2018"):
+    #         luminosity="59.8"
+    #     elif(year=="RunII"):
+    #         luminosity="138"
 
-        with open("plotConfigs/{0}_{1}.json".format(year,wp)) as json_file:
-            data = json.load(json_file)
-            plotVarStack(data,"H_m_T__nominal","{0}/m_lin_T_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
-            plotVarStack(data,"H_m_M__nominal","{0}/m_lin_M_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
-            plotVarStack(data,"H_m_F__nominal","{0}/m_lin_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+    #     with open("plotConfigs/{0}_{1}.json".format(year,wp)) as json_file:
+    #         data = json.load(json_file)
+    #         plotVarStack(data,"H_m_T__nominal","{0}/m_lin_T_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+    #         plotVarStack(data,"H_m_M__nominal","{0}/m_lin_M_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+    #         plotVarStack(data,"H_m_F__nominal","{0}/m_lin_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+    #         plotVarStack(data,"H_m_F__nominal","{0}/m_lin_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+    #         plotVarStackMC(data,"Gamma_pT_T_nom","{0}/gamma_pT_T_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
+    #         plotVarStackMC(data,"Gamma_pT_M_nom","{0}/gamma_pT_M_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
+    #         plotVarStackMC(data,"Gamma_pT_F_nom","{0}/gamma_pT_F_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
+
+    #         f = r.TFile.Open(data["data_obs"]["file"])
+    #         print(data["data_obs"]["file"])
+    #         hTotal = f.Get("data_obs_GammapTnoTriggers_nom")
+    #         hPass  = f.Get("data_obs_GammapTtriggersAll_nom")
+    #         hPass.RebinX(5)
+    #         hTotal.RebinX(5)
+    #         eff = r.TEfficiency(hPass,hTotal)
+    #         eff.SetName("trig_eff")
+    #         #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
+    #         g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
+    #         g.cd()
+    #         eff.Write()
+    #         g.Close()
+
+    #         plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year),ylabel="Trigger efficiency / 50 GeV")
+
+    #Postfit
+    cmsswArea       = "../CMSSW_10_6_14/src/"
+    polyOrder       = "2"
+    workingAreas    = ["tight_medium"]
+    for workingArea in workingAreas:
+        baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
+        fitFile         = baseDir+"postfitshapes_b.root"
+        Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
+
+        try:
+            plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+            plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+            plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
+            plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True)
+            plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True)
+            plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=True)
+        except:
+           print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
+           

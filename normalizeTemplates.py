@@ -112,8 +112,8 @@ def mergeRunII(wp,tagger):
 
 if __name__ == '__main__':
     #lumiNormalization(wp="tight",tagger="/")
-    lumiNormalization(wp="medium",tagger="/")
+    #lumiNormalization(wp="medium",tagger="/")
     #lumiNormalization(wp="loose",tagger="/")
-    #lumiNormalization(wp="tight_medium",tagger="/")
-    mergeRunII("medium","/")
-    #mergeRunII("tight_medium","/")
+    lumiNormalization(wp="tight_medium",tagger="/")
+    #mergeRunII("medium","/")
+    mergeRunII("tight_medium","/")

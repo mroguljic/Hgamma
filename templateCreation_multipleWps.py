@@ -22,14 +22,19 @@ if("2018/" in iDir):
     year="2018"
 
 
-variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown"]
+variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","pnetUp","pnetDown"]
 for variation in variations:
     if(variation!="nom"):
         if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample):
             #Running variations only on some processes
+            continue
+        if(("pnet" in variation) and not ("ZGamma" in sample or "Hgamma" in sample)):
+            #Xbb SF variation only on processes with X->bb
             continue           
 
     inputTag = variation
+    if "pnet" in variation:
+        inputTag = "nom"
 
     inputFile = "{0}/{1}_{2}.root".format(iDir,sample,inputTag)
     outputFile = os.path.join(outDir,"nonScaled/",sample)
