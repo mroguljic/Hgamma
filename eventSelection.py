@@ -108,7 +108,7 @@ def eventSelection(options):
 
     #-------MET filters------------#
     MetFilters = ["Flag_BadPFMuonFilter","Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_HBHENoiseIsoFilter","Flag_HBHENoiseFilter",
-    "Flag_globalSuperTightHalo2016Filter","Flag_goodVertices","Flag_BadPFMuonDzFilter","Flag_eeBadScFilter","Flag_ecalBadCalibFilter"]
+    "Flag_globalSuperTightHalo2016Filter","Flag_goodVertices","Flag_BadPFMuonDzFilter","Flag_eeBadScFilter"]
     if(year=="2017" or year=="2018"):
         MetFilters.append("Flag_ecalBadCalibFilter")
     MetFiltersString = a.GetFlagString(MetFilters)
@@ -138,6 +138,9 @@ def eventSelection(options):
     nTrig                   = getNweighted(a,isData)
     #------------------------------#
 
+    if("ZGamma" in options.process):
+        a.Define("genGammaPt","genGammaPt(nGenPart,GenPart_pdgId,GenPart_pt,GenPart_statusFlags)")
+
 
     #----------Selection-----------#
     a.Cut("JetAndPhoton","nFatJet>0 && nPhoton>0")
@@ -147,7 +150,8 @@ def eventSelection(options):
     a.Cut("EtaCut","abs(FatJet_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
     nEta = getNweighted(a,isData)
 
-    a.Cut("GammaID","Photon_cutBased[0]==3")#Fall17V2 Tight
+    a.Cut("GammaID","Photon_cutBased[0]==3")#cut-based ID Fall17V2 Tight
+    #a.Cut("GammaID","Photon_mvaID_WP80[0]==1")#MVA ID Fall17V2
     nID = getNweighted(a,isData)
 
     evtColumns = VarGroup("Event columns")
@@ -255,6 +259,9 @@ def eventSelection(options):
 
         if "2016" in year or "2017" in year:
             snapshotColumns.extend(['Prefire__nom','Prefire__up','Prefire__down'])
+
+    if("ZGamma" in options.process):
+        snapshotColumns.append("genGammaPt")
 
 
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)
