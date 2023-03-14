@@ -9,7 +9,7 @@ from TIMBER.Tools.AutoPU import ApplyPU, AutoPU, MakePU
 import TIMBER.Tools.AutoJME as AutoJME
 import os
 
-AutoJME.AK8collection = "FatJet"
+AutoJME.AK8collection = "FatJetAK15"
 
 def twoDigitYear(year):
     if("16" in year):
@@ -23,9 +23,9 @@ def twoDigitYear(year):
         return -1
 
 def ApplyKinematicsSnap(ana): # For snapshotting only
-    ana.Cut('njets','nFatJet > 0')
+    ana.Cut('njets','nFatJetAK15 > 0')
     ana.Cut('nphot','nPhoton > 0')
-    ana.Cut('pT', 'FatJet_pt[0] > 250 && Photon_pt[0] > 250')
+    ana.Cut('pT', 'FatJetAK15_pt[0] > 250 && Photon_pt[0] > 250')
     return ana
 
 def ApplyStandardCorrections(ana,year,process):
@@ -35,11 +35,12 @@ def ApplyStandardCorrections(ana,year,process):
         ana.Cut('lumiFilter',lumiFilter.GetCall(evalArgs={"run":"run","lumi":"luminosityBlock"}))
         if yr == 18:
             HEM_worker = ModuleWorker('HEM_drop','TIMBER/Framework/include/HEM_drop.h',["data"+process[-1],"{0}"])
-            ana.Cut('HEM','%s[0] > 0'%(HEM_worker.GetCall(evalArgs={"FatJet_eta":"FatJet_eta","FatJet_phi":"FatJet_phi"})))
+            ana.Cut('HEM','%s[0] > 0'%(HEM_worker.GetCall(evalArgs={"FatJetAK15_eta":"FatJetAK15_eta","FatJetAK15_phi":"FatJetAK15_phi"})))
 
     else:
-        ana  = AutoPU(ana,year)
-        ana.AddCorrection(Correction('Pdfweight','TIMBER/Framework/include/PDFweight_uncert.h',[ana.lhaid],corrtype='uncert'))
+        if not "Hgamma" in process:
+            ana  = AutoPU(ana,year)
+            ana.AddCorrection(Correction('Pdfweight','TIMBER/Framework/include/PDFweight_uncert.h',[ana.lhaid],corrtype='uncert'))
         if yr == 16 or yr == 17:
             ana.AddCorrection(
                 Correction("Prefire","TIMBER/Framework/include/Prefire_weight.h",[yr],corrtype='weight')
@@ -49,7 +50,7 @@ def ApplyStandardCorrections(ana,year,process):
                 Correction('HEM_drop','TIMBER/Framework/include/HEM_drop.h',[process,"{0}"],corrtype='corr')
             )
 
-    ana = AutoJME.AutoJME(ana, "FatJet", year, dataEra=process[-1],ULflag=True)
+    ana = AutoJME.AutoJME(ana, "FatJetAK15", year, dataEra=process[-1],ULflag=True)
     ana.MakeWeightCols(extraNominal='genWeight' if not ana.isData else '')
 
        
@@ -58,7 +59,7 @@ def ApplyStandardCorrections(ana,year,process):
 def Snapshot(ana,year,output):
     yr = twoDigitYear(year)
     columns = [
-        'n.*','^(?!.*__vec)FatJet_.*','HLT_PF*', 'HLT_AK8.*','Pileup_nTrueInt','Pileup_nPV',
+        'n.*','^(?!.*__vec)FatJetAK15_.*','HLT_PF*', 'HLT_AK8.*','Pileup_nTrueInt','Pileup_nPV',
         'event', 'eventWeight', 'luminosityBlock', 'run','Jet_pt', 'Jet_eta','Jet_phi', 'Jet_hadronFlavour','Jet_btagDeepB',
         'Jet_btagDeepFlavB','Electron_cutBased','Electron_pt','Electron_eta','Muon_looseId','Muon_pfIsoId','Muon_pt','Muon_eta', "Flag.*", "PSWeight",
         'Photon_pt','Photon_eta','Photon_phi','Photon_mvaID','Photon_mvaID_Fall17V1p1','Photon_cutBased','Photon_cutBased_Fall17V1Bitmap'

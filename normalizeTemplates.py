@@ -63,8 +63,8 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
     processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma","QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
     for year in ['2016','2016APV','2017','2018']:
         print(year)
-        nonScaledDir = "results/templates/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
-        lumiScaledDir = "results/templates/{2}/{0}/{1}/scaled/".format(wp,year,tagger)
+        nonScaledDir = "results_AK15/templates/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
+        lumiScaledDir = "results_AK15/templates/{2}/{0}/{1}/scaled/".format(wp,year,tagger)
 
         for proc in processes:
             nonScaledFile = "{0}/{1}.root".format(nonScaledDir,proc)
@@ -97,8 +97,8 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
         mergeSamples(SinglePhotonSamples,"{0}/SinglePhoton{1}.root".format(lumiScaledDir,year[2:]),"SinglePhoton201[0-9][a-zA-Z0-9]+_","data_obs_")
 
 def mergeRunII(wp,tagger):
-    lumiScaledDir = "results/templates/{0}/{1}".format(tagger,wp)
-    runIIDir      = "results/templates/{0}/{1}/RunII/scaled/".format(tagger,wp)
+    lumiScaledDir = "results_AK15/templates/{0}/{1}".format(tagger,wp)
+    runIIDir      = "results_AK15/templates/{0}/{1}/RunII/scaled/".format(tagger,wp)
     if not os.path.exists(runIIDir):
         os.makedirs(runIIDir)
     os.system("hadd -f {0}/SinglePhoton.root {1}/201*/scaled/SinglePhoton*.root".format(runIIDir,lumiScaledDir))

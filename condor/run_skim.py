@@ -46,7 +46,7 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir=""):
         dataset     = sample_cfg["dataset"]
         das_query   =[]
         for singleDataset in dataset.split(','):
-            query   = "dasgoclient -query='file dataset={singleDataset}'".format(**locals())
+            query   = "dasgoclient -query='file dataset={singleDataset}  instance=prod/phys03'".format(**locals())
             das_query.append(query)
         allFiles    = []
         for query in das_query:

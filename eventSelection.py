@@ -18,46 +18,46 @@ def getNweighted(analyzer,isData):
 
 def ptCorrectorString(variation,isData):
     if isData:
-        jetCorrector  = '{FatJet_JES_nom}'
+        jetCorrector  = '{FatJetAK15_JES_nom}'
     else:
         if(variation=="jesUp"):
-            jetCorrector  = '{FatJet_JES_up,FatJet_JER_nom}'
+            jetCorrector  = '{FatJetAK15_JES_up,FatJetAK15_JER_nom}'
         elif(variation=="jesDown"):
-            jetCorrector  = '{FatJet_JES_down,FatJet_JER_nom}'
+            jetCorrector  = '{FatJetAK15_JES_down,FatJetAK15_JER_nom}'
         elif(variation=="jerUp"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_up}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_up}'
         elif(variation=="jerDown"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_down}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_down}'
         else:
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom}'
     return jetCorrector
 
 def massCorrectorString(variation,isData):
     if isData:
-        jetCorrector  = '{FatJet_JES_nom}'
+        jetCorrector  = '{FatJetAK15_JES_nom}'
     else:
         if(variation=="jesUp"):
-            jetCorrector  = '{FatJet_JES_up,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
+            jetCorrector  = '{FatJetAK15_JES_up,FatJetAK15_JER_nom,FatJetAK15_JMS_nom,FatJetAK15_JMR_nom}'
         elif(variation=="jesDown"):
-            jetCorrector  = '{FatJet_JES_down,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
+            jetCorrector  = '{FatJetAK15_JES_down,FatJetAK15_JER_nom,FatJetAK15_JMS_nom,FatJetAK15_JMR_nom}'
         elif(variation=="jerUp"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_up,FatJet_JMS_nom,FatJet_JMR_nom}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_up,FatJetAK15_JMS_nom,FatJetAK15_JMR_nom}'
         elif(variation=="jerDown"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_down,FatJet_JMS_nom,FatJet_JMR_nom}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_down,FatJetAK15_JMS_nom,FatJetAK15_JMR_nom}'
         elif(variation=="jmsUp"):
-            #jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_up,FatJet_JMR_nom}'
+            #jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom,FatJetAK15_JMS_up,FatJetAK15_JMR_nom}'
             #Applying a custom jms uncertainty in the event loop
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom,FatJetAK15_JMS_nom,FatJetAK15_JMR_nom}'
         elif(variation=="jmsDown"):
             #Applying a custom jms uncertainty in the event loop
-            #jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_down,FatJet_JMR_nom}'
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
+            #jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom,FatJetAK15_JMS_down,FatJetAK15_JMR_nom}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom,FatJetAK15_JMS_nom,FatJetAK15_JMR_nom}'
         elif(variation=="jmrUp"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_up}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom,FatJetAK15_JMS_nom,FatJetAK15_JMR_up}'
         elif(variation=="jmrDown"):
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_down}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom,FatJetAK15_JMS_nom,FatJetAK15_JMR_down}'
         else:
-            jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
+            jetCorrector  = '{FatJetAK15_JES_nom,FatJetAK15_JER_nom,FatJetAK15_JMS_nom,FatJetAK15_JMR_nom}'
 
     return jetCorrector
 
@@ -140,32 +140,29 @@ def eventSelection(options):
 
 
     #----------Selection-----------#
-    a.Cut("JetAndPhoton","nFatJet>0 && nPhoton>0")
-    a.Define("Hidx","leadingNonGammaAK8Idx(nFatJet,FatJet_eta,FatJet_phi,Photon_eta[0],Photon_phi[0])")
+    a.Cut("JetAndPhoton","nFatJetAK15>0 && nPhoton>0")
+    a.Define("Hidx","leadingNonGammaAK8Idx(nFatJetAK15,FatJetAK15_eta,FatJetAK15_phi,Photon_eta[0],Photon_phi[0])")
     a.Cut("HidxCut","Hidx>-1")
     nJetGamma = getNweighted(a,isData)
-    a.Cut("EtaCut","abs(FatJet_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
+    a.Cut("EtaCut","abs(FatJetAK15_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
     nEta = getNweighted(a,isData)
 
     a.Cut("GammaID","Photon_cutBased[0]==3")#Fall17V2 Tight
     nID = getNweighted(a,isData)
 
     evtColumns = VarGroup("Event columns")
-    evtColumns.Add('FatJet_pt_corr','hardware::MultiHadamardProduct(FatJet_pt,%s)'%ptCorrector)
-    evtColumns.Add('FatJet_msoftdrop_corr','hardware::MultiHadamardProduct(FatJet_msoftdrop,%s)'%massCorrector)
-    evtColumns.Add('FatJet_mpnet_corr','hardware::MultiHadamardProduct(FatJet_particleNet_mass,%s)'%massCorrector)
+    evtColumns.Add('FatJet_pt_corr','hardware::MultiHadamardProduct(FatJetAK15_pt,%s)'%ptCorrector)
+    evtColumns.Add('FatJet_msoftdrop_corr','hardware::MultiHadamardProduct(FatJetAK15_msoftdrop,%s)'%massCorrector)
     evtColumns.Add("Higgs_pt","FatJet_pt_corr[Hidx]")
-    evtColumns.Add("Higgs_eta","FatJet_eta[Hidx]")
-    evtColumns.Add("Higgs_phi","FatJet_phi[Hidx]")
-    evtColumns.Add("HiggsSDMass",'FatJet_msoftdrop_corr[Hidx]')
-    
+    evtColumns.Add("Higgs_eta","FatJetAK15_eta[Hidx]")
+    evtColumns.Add("Higgs_phi","FatJetAK15_phi[Hidx]")    
     #Adding custom jms uncertainty of 2%
     if(options.variation=="jmsUp"):
-        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]*1.02')
+        evtColumns.Add("HiggsSDMass",'FatJet_msoftdrop_corr[Hidx]*1.02')
     elif(options.variation=="jmsDown"):
-        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]*0.98')
+        evtColumns.Add("HiggsSDMass",'FatJet_msoftdrop_corr[Hidx]*0.98')
     else:
-        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]')
+        evtColumns.Add("HiggsSDMass",'FatJet_msoftdrop_corr[Hidx]')
     evtColumns.Add("Gamma_pt","Photon_pt[0]")
     evtColumns.Add("Gamma_eta","Photon_eta[0]")
     evtColumns.Add("Gamma_phi","Photon_phi[0]")
@@ -190,7 +187,7 @@ def eventSelection(options):
     a.Cut("pT","Higgs_pt>300 && Gamma_pt>300")
     npT = getNweighted(a,isData)
 
-    a.Cut("JetPnetMassCut","HiggsPnetMass>50")
+    a.Cut("JetMassCut","HiggsSDMass>50")
     nJetMass = getNweighted(a,isData)
 
     a.Cut("LeptonVeto","nMu==0 && nEle==0")
@@ -200,7 +197,7 @@ def eventSelection(options):
     a.Cut("topVeto","topVetoFlag==0")
     nTopVeto = getNweighted(a,isData)
 
-    a.Define("pnetHiggs","FatJet_particleNetMD_Xbb[Hidx]/(FatJet_particleNetMD_Xbb[Hidx]+FatJet_particleNetMD_QCD[Hidx])")
+    a.Define("pnetHiggs","FatJetAK15_ParticleNetMD_probXbb[Hidx]/(FatJetAK15_ParticleNetMD_probXbb[Hidx]+FatJetAK15_ParticleNetMD_probQCD[Hidx])")
 
     checkpoint  = a.GetActiveNode()
     #-----Trigger study part-------#
@@ -211,16 +208,16 @@ def eventSelection(options):
         if(MetFiltersString):
             a.Cut("MET For Trigger",MetFiltersString)
         #need to change names to create nodes with different names than already existing
-        a.Cut("JetAndPhotonForTrig","nFatJet>0 && nPhoton>0")
-        a.Define("Hidx","leadingNonGammaAK8Idx(nFatJet,FatJet_eta,FatJet_phi,Photon_eta[0],Photon_phi[0])")
+        a.Cut("JetAndPhotonForTrig","nFatJetAK15>0 && nPhoton>0")
+        a.Define("Hidx","leadingNonGammaAK8Idx(nFatJetAK15,FatJetAK15_eta,FatJetAK15_phi,Photon_eta[0],Photon_phi[0])")
         a.Cut("HidxCutForTrig","Hidx>-1")
         nJetGamma = getNweighted(a,isData)
-        a.Cut("EtaCutForTrig","abs(FatJet_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
+        a.Cut("EtaCutForTrig","abs(FatJetAK15_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
         a.Cut("GammaIDForTrig","Photon_cutBased[0]==3")
         evtColumns.name = "Event Columns For Trigger"
         a.Apply([evtColumns])
         a.Cut("pT_ForTrigger","Higgs_pt>300 && Gamma_pt>300")
-        a.Cut("JetPnetMassCut_ForTrigger","HiggsPnetMass>50")
+        a.Cut("JetMassCut_ForTrigger","HiggsSDMass>50")
 
         triggersStringAll   = a.GetTriggerString(triggerList)  
         h_pTnoTriggers      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTnoTriggers'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',70,300,1000),"Gamma_pt","genWeight")
@@ -236,7 +233,7 @@ def eventSelection(options):
 
     #--------Store Output----------#
 
-    snapshotColumns = ["pnetHiggs","Higgs_pt","Gamma_pt","HiggsSDMass","HiggsPnetMass","PV_npvsGood","nFatJet","nPhoton"]
+    snapshotColumns = ["pnetHiggs","Higgs_pt","Gamma_pt","HiggsSDMass","PV_npvsGood","nFatJetAK15","nPhoton"]
     outputFile      = options.output.replace(".root","_{0}.root".format(options.variation))
 
     if not isData:

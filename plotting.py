@@ -510,7 +510,7 @@ if __name__ == '__main__':
     wp = "medium"
     # for year in ["2016","2016APV","2017","2018","RunII"]:
     for year in ["RunII"]:
-        odir = "results/plots/{0}/{1}/".format(wp,year)
+        odir = "results_AK15/plots/{0}/{1}/".format(wp,year)
         Path(odir).mkdir(parents=True, exist_ok=True)
         
         if(year=="2016APV"):
@@ -557,13 +557,13 @@ if __name__ == '__main__':
     # for workingArea in workingAreas:
     #     baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
     #     fitFile         = baseDir+"postfitshapes_b.root"
-    #     Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
+    #     Path("results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
 
     #     try:
-    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
-    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
-    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder))
-    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
+    #         plotPostfit(fitFile,"pass","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+    #         plotPostfit(fitFile,"fail","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
+    #         plotPostfit(fitFile,"pass","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder))
+    #         plotPostfit(fitFile,"fail","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
     #     except:
     #        print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
            
@@ -574,13 +574,13 @@ if __name__ == '__main__':
     # for workingArea in workingAreas:
     #     baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
     #     fitFile         = baseDir+"postfitshapes_b.root"
-    #     Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
+    #     Path("results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
 
     #     try:
-    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
-    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
-    #         plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder))
-    #         plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
+    #         plotPostfit(fitFile,"pass","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+    #         plotPostfit(fitFile,"fail","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
+    #         plotPostfit(fitFile,"pass","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder))
+    #         plotPostfit(fitFile,"fail","results_AK15/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False)
     #     except:
     #        print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
     #        
