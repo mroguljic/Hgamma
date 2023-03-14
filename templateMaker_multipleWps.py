@@ -144,6 +144,17 @@ if not isData:
         a.AddCorrection(pdfCorr, evalArgs={'valUp':'Pdfweight__up','valDown':'Pdfweight__down'})
         a.AddCorrection(puCorr, evalArgs={'val':'Pileup__nom','valUp':'Pileup__up','valDown':'Pileup__down'})
 
+    if "ZGamma" in options.process:
+        NLOfile    = "data/ewk_corr.root"
+        ewkName    = "zgamma_ewk"
+        a.Define("genGammaPt_rescaled","TMath::Max(200.,TMath::Min(Double_t(genGammaPt),1000.))")#Weights applied in 200-2000 GeV gen V pt range
+        NLOewkCorr = Correction('ewk_nlo',"TIMBER/Framework/src/HistLoader.cc",constructor=[NLOfile,ewkName],corrtype='corr')
+        ISRcorr    = genWCorr.Clone("ISRunc",newMainFunc="evalUncert",newType="uncert")
+        FSRcorr    = genWCorr.Clone("FSRunc",newMainFunc="evalUncert",newType="uncert")
+        #a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genGammaPt_rescaled','yval':0,'zval':0})
+        a.AddCorrection(ISRcorr, evalArgs={'valUp':'ISR__up','valDown':'ISR__down'})
+        a.AddCorrection(FSRcorr, evalArgs={'valUp':'FSR__up','valDown':'FSR__down'})
+
     if(year=="2018"):
         hemCorr = genWCorr.Clone("hemCorrection")
         a.AddCorrection(hemCorr, evalArgs={'val':'HEM_drop__nom'})
