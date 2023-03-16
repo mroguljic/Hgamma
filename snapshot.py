@@ -25,7 +25,7 @@ def twoDigitYear(year):
 def ApplyKinematicsSnap(ana): # For snapshotting only
     ana.Cut('njets','nFatJetAK15 > 0')
     ana.Cut('nphot','nPhoton > 0')
-    ana.Cut('pT', 'FatJetAK15_pt[0] > 250 && Photon_pt[0] > 250')
+    ana.Cut('pT', 'FatJetAK15_pt[0] > 180 && Photon_pt[0] > 180')
     return ana
 
 def ApplyStandardCorrections(ana,year,process):

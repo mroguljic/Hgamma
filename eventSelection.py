@@ -188,7 +188,7 @@ def eventSelection(options):
 
     a.Apply([evtColumns])
 
-    a.Cut("pT","Higgs_pt>300 && Gamma_pt>300")
+    a.Cut("pT","Higgs_pt>200 && Gamma_pt>200")
     npT = getNweighted(a,isData)
 
     a.Cut("JetMassCut","HiggsSDMass>50")

@@ -3,7 +3,7 @@ HGAMMA_DIR          = "/users/mrogul/Work/Hgamma/Hgamma"
 #Where to store selection trees
 SELECTION_DIR       = HGAMMA_DIR+"/results_AK15/selection/"
 #Where to store skimmed NanoAODs
-SKIM_DIR            = "/STORE/matej/Hgamma_skims/v9/"
+SKIM_DIR            = "/STORE/matej/Hgamma_skims/v9_PFNano/"
 #Where to store condor logs for selection jobs
 SELECTION_JOB_DIR   = HGAMMA_DIR+"/condor/selection_jobs"
 #Where to store condor logs for skimming jobs

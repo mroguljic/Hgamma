@@ -1,53 +1,23 @@
 {
   "SinglePhoton2017B": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017B/"
+    "dataset":"/STORE/matej/Hgamma_skims/v9_PFNano/2017/SinglePhoton2017B/"
   },
   "SinglePhoton2017C": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017C/"
+    "dataset":"/STORE/matej/Hgamma_skims/v9_PFNano/2017/SinglePhoton2017C/"
   },
   "SinglePhoton2017D": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017D/"
+    "dataset":"/STORE/matej/Hgamma_skims/v9_PFNano/2017/SinglePhoton2017D/"
   },
   "SinglePhoton2017E": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017E/"
+    "dataset":"/STORE/matej/Hgamma_skims/v9_PFNano/2017/SinglePhoton2017E/"
   },
   "SinglePhoton2017F": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/SinglePhoton2017F/"
+    "dataset":"/STORE/matej/Hgamma_skims/v9_PFNano/2017/SinglePhoton2017F/"
   },
   "ZGamma": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/ZGamma"
-  },
-  "WGamma": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/WGamma"
+    "dataset":"/STORE/matej/Hgamma_skims/v9_PFNano/2017/ZGamma"
   },
   "Hgamma": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/Hgamma"
-  },
-  "GJets200": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets200"
-  },
-  "GJets400": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets400"
-  },
-  "GJets600": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets600"
-  },
-  "TTGJets": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/TTGJets"
-  },
-  "QCD500": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD500"
-  },
-  "QCD700": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD700"
-  },
-  "QCD1000": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD1000"
-  },
-  "QCD1500": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD1500"
-  },
-  "QCD2000": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/QCD2000"
+    "dataset":"/STORE/matej/Hgamma_skims/v9_PFNano/2017/Hgamma"
   }
 }

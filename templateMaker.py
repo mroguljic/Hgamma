@@ -80,7 +80,7 @@ year            = options.year
 histos          = []
 histGroups      = []
 taggerBranch    = "pnetHiggs"
-massVar         = "HiggsPnetMass"
+massVar         = "HiggsSDMass"
 
 if("data" in options.process.lower() or "singlephoton" in options.process.lower() or "egamma" in options.process.lower()):
     print("Running on data")

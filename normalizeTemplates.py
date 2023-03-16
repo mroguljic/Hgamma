@@ -61,7 +61,8 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
     #processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","GJetsHT200","GJetsHT400","GJetsHT600","TTGJets","Hgamma"
     #,"QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
     processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma","QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
-    for year in ['2016','2016APV','2017','2018']:
+    #for year in ['2016','2016APV','2017','2018']:
+    for year in ['2017']:
         print(year)
         nonScaledDir = "results_AK15/templates/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
         lumiScaledDir = "results_AK15/templates/{2}/{0}/{1}/scaled/".format(wp,year,tagger)
