@@ -220,13 +220,13 @@ def eventSelection(options):
         a.Cut("GammaIDForTrig","Photon_cutBased[0]==3")
         evtColumns.name = "Event Columns For Trigger"
         a.Apply([evtColumns])
-        a.Cut("pT_ForTrigger","Higgs_pt>300 && Gamma_pt>300")
+        a.Cut("pT_ForTrigger","Higgs_pt>200 && Gamma_pt>200")
         a.Cut("JetMassCut_ForTrigger","HiggsSDMass>50")
 
         triggersStringAll   = a.GetTriggerString(triggerList)  
-        h_pTnoTriggers      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTnoTriggers'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',70,300,1000),"Gamma_pt","genWeight")
+        h_pTnoTriggers      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTnoTriggers'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',80,200,1000),"Gamma_pt","genWeight")
         a.Cut("Triggers for trig measurement",triggersStringAll)
-        h_pTtriggersAll      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTtriggersAll'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',70,300,1000),"Gamma_pt","genWeight")
+        h_pTtriggersAll      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTtriggersAll'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',80,200,1000),"Gamma_pt","genWeight")
 
         histos.append(h_pTnoTriggers)
         histos.append(h_pTtriggersAll)
