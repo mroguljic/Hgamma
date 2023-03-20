@@ -240,7 +240,7 @@ def eventSelection(options):
 
     #--------Store Output----------#
 
-    snapshotColumns = ["pnetHiggs","Higgs_pt","Gamma_pt","HiggsSDMass","HiggsPnetMass","PV_npvsGood","nFatJet","nPhoton"]
+    snapshotColumns = ["pnetHiggs","Higgs_pt","Gamma_pt","Gamma_eta","Gamma_phi","HiggsSDMass","HiggsPnetMass","PV_npvsGood","nFatJet","nPhoton"]
     outputFile      = options.output.replace(".root","_{0}.root".format(options.variation))
 
     if not isData:

@@ -137,6 +137,13 @@ genWCorr    = Correction('genW',"TIMBER/Framework/Zbb_modules/BranchCorrection.c
 a.AddCorrection(genWCorr, evalArgs={'val':'genWeight'})
 
 if not isData:
+    photIDFile   = "data/photIDSFs.root"
+    photIDName   = "UL{0}_sf".format(year)
+
+    a.Define("Gamma_pt_CutID","TMath::Min(Double_t(Gamma_pt),999.)")#Cut based SF are measured up to 1000 GeV
+    photIDCorr   = Correction('photID',"TIMBER/Framework/src/HistLoader.cc",constructor=[photIDFile,photIDName],corrtype='weight',mainFunc='eval')
+    a.AddCorrection(photIDCorr, evalArgs={'xval':'Gamma_eta','yval':'Gamma_pt_CutID','zval':0})
+
     if not "Hgamma" in options.process:
         #Private signal does not have proper pdf nor pu correction
         pdfCorr     = genWCorr.Clone("pdfUnc",newMainFunc="evalUncert",newType="uncert")
@@ -148,10 +155,10 @@ if not isData:
         NLOfile    = "data/ewk_corr.root"
         ewkName    = "zgamma_ewk"
         a.Define("genGammaPt_rescaled","TMath::Max(200.,TMath::Min(Double_t(genGammaPt),1000.))")#Weights applied in 200-2000 GeV gen V pt range
-        NLOewkCorr = Correction('ewk_nlo',"TIMBER/Framework/src/HistLoader.cc",constructor=[NLOfile,ewkName],corrtype='corr')
+        NLOewkCorr = Correction('ewk_nlo',"TIMBER/Framework/src/HistLoader.cc",constructor=[NLOfile,ewkName],corrtype='corr',isClone=True,cloneFuncInfo=photIDCorr._funcInfo,isNewConstr=True)
         ISRcorr    = genWCorr.Clone("ISRunc",newMainFunc="evalUncert",newType="uncert")
         FSRcorr    = genWCorr.Clone("FSRunc",newMainFunc="evalUncert",newType="uncert")
-        #a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genGammaPt_rescaled','yval':0,'zval':0})
+        a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genGammaPt_rescaled','yval':0,'zval':0})
         a.AddCorrection(ISRcorr, evalArgs={'valUp':'ISR__up','valDown':'ISR__down'})
         a.AddCorrection(FSRcorr, evalArgs={'valUp':'FSR__up','valDown':'FSR__down'})
 
@@ -162,7 +169,7 @@ if not isData:
         prefireCorr = genWCorr.Clone("prefireUnc",newMainFunc="evalWeight",newType="weight")
         a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
 
-    #Include trigger eff later
+    #Trigger is negligible
     #trigFile   = "data/trig_eff_{0}.root".format(year)
     #a.Define("pt_for_trig","TMath::Min(Double_t(FatJet_pt0),999.)")#Trigger eff, measured up to 1000 GeV (well withing 100% eff. regime)
     #triggerCorr = Correction('trig',"TIMBER/Framework/Zbb_modules/TrigEff.cc",constructor=["{0}".format(trigFile),"trig_eff"],corrtype='weight')
