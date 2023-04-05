@@ -13,5 +13,4 @@ python run_selection.py -y 2016
 python run_selection.py -y 2017
 python run_selection.py -y 2018
 
-python run_templates.py tight
-python run_templates_multipleWps.py tight medium
+python run_templates.py tight medium

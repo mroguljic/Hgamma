@@ -119,6 +119,7 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
     return len(submissionCmds)
 
 def haddResults(outDir):
+    cwd = os.getcwd()
     os.chdir(outDir)
     directories= [d for d in os.listdir(os.getcwd()) if os.path.isdir(d)]
     for d in directories:
@@ -133,6 +134,7 @@ def haddResults(outDir):
                 os.system(cmd)
 
         os.system("rm -r {0}".format(d))
+    os.chdir(cwd)
             
 
 def runYear(year,submit=False):
