@@ -156,9 +156,10 @@ if not isData:
         ewkName    = "zgamma_ewk"
         a.Define("genGammaPt_rescaled","TMath::Max(200.,TMath::Min(Double_t(genGammaPt),1000.))")#Weights applied in 200-2000 GeV gen V pt range
         NLOewkCorr = Correction('ewk_nlo',"TIMBER/Framework/src/HistLoader.cc",constructor=[NLOfile,ewkName],corrtype='corr',isClone=True,cloneFuncInfo=photIDCorr._funcInfo,isNewConstr=True)
+        a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genGammaPt_rescaled','yval':0,'zval':0})
+    if "ZGamma" in options.process or "WGamma" in options.process:
         ISRcorr    = genWCorr.Clone("ISRunc",newMainFunc="evalUncert",newType="uncert")
         FSRcorr    = genWCorr.Clone("FSRunc",newMainFunc="evalUncert",newType="uncert")
-        a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genGammaPt_rescaled','yval':0,'zval':0})
         a.AddCorrection(ISRcorr, evalArgs={'valUp':'ISR__up','valDown':'ISR__down'})
         a.AddCorrection(FSRcorr, evalArgs={'valUp':'FSR__up','valDown':'FSR__down'})
 
