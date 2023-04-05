@@ -166,9 +166,14 @@ if not isData:
     if(year=="2018"):
         hemCorr = genWCorr.Clone("hemCorrection")
         a.AddCorrection(hemCorr, evalArgs={'val':'HEM_drop__nom'})
-    if(year!="2018"):
-        prefireCorr = genWCorr.Clone("prefireUnc",newMainFunc="evalWeight",newType="weight")
-        a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
+        #Define prefiring to be "neutral" in 2018 so we can hadd prefire unc. with other years
+        a.Define("Prefire__nom","1.0")
+        a.Define("Prefire__up","1.0")
+        a.Define("Prefire__down","1.0")
+
+    prefireCorr = genWCorr.Clone("prefireUnc",newMainFunc="evalWeight",newType="weight")
+    a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
+
 
     #Trigger is negligible
     #trigFile   = "data/trig_eff_{0}.root".format(year)
