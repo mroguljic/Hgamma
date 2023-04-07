@@ -170,16 +170,16 @@ if not isData:
         a.Define("Prefire__nom","1.0")
         a.Define("Prefire__up","1.0")
         a.Define("Prefire__down","1.0")
+    
+    #Manually apply trigger efficiency with uncertainties
+    a.Define("trigger__nom","0.994")
+    a.Define("trigger__up","0.995")
+    a.Define("trigger__down","0.993")
 
     prefireCorr = genWCorr.Clone("prefireUnc",newMainFunc="evalWeight",newType="weight")
+    triggerCorr = genWCorr.Clone("triggerUnc",newMainFunc="evalWeight",newType="weight")
     a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
-
-
-    #Trigger is negligible
-    #trigFile   = "data/trig_eff_{0}.root".format(year)
-    #a.Define("pt_for_trig","TMath::Min(Double_t(FatJet_pt0),999.)")#Trigger eff, measured up to 1000 GeV (well withing 100% eff. regime)
-    #triggerCorr = Correction('trig',"TIMBER/Framework/Zbb_modules/TrigEff.cc",constructor=["{0}".format(trigFile),"trig_eff"],corrtype='weight')
-    #a.AddCorrection(triggerCorr, evalArgs={'xval':'pt_for_trig','yval':0,'zval':0})
+    a.AddCorrection(triggerCorr, evalArgs={'val':'trigger__nom','valUp':'trigger__up','valDown':'trigger__down'})
 
 a.MakeWeightCols()
 

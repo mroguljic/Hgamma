@@ -615,7 +615,7 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
     else:
         plotName = "{0}/{1}_{2}.png".format(odir,outFile,region)
     if binWidthDivision:
-        plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]",plotName,xRange=[60,200],yRange=[0,20],binWidthDivision=binWidthDivision)
+        plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]",plotName,xRange=[60,200],binWidthDivision=binWidthDivision)
     else:
         plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]",plotName,xRange=[60,200],binWidthDivision=binWidthDivision)
 
