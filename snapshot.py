@@ -39,7 +39,8 @@ def ApplyStandardCorrections(ana,year,process):
 
     else:
         ana  = AutoPU(ana,year)
-        ana.AddCorrection(Correction('Pdfweight','TIMBER/Framework/include/PDFweight_uncert.h',[ana.lhaid],corrtype='uncert'))
+        if not "Hgamma" in process:
+            ana.AddCorrection(Correction('Pdfweight','TIMBER/Framework/include/PDFweight_uncert.h',[ana.lhaid],corrtype='uncert'))
         if yr == 16 or yr == 17:
             ana.AddCorrection(
                 Correction("Prefire","TIMBER/Framework/include/Prefire_weight.h",[yr],corrtype='weight')
@@ -61,7 +62,8 @@ def Snapshot(ana,year,output):
         'n.*','^(?!.*__vec)FatJet_.*','HLT_PF*', 'HLT_AK8.*','Pileup_nTrueInt','Pileup_nPV',
         'event', 'eventWeight', 'luminosityBlock', 'run','Jet_pt', 'Jet_eta','Jet_phi', 'Jet_hadronFlavour','Jet_btagDeepB',
         'Jet_btagDeepFlavB','Electron_cutBased','Electron_pt','Electron_eta','Muon_looseId','Muon_pfIsoId','Muon_pt','Muon_eta', "Flag.*", "PSWeight",
-        'Photon_pt','Photon_eta','Photon_phi','Photon_mvaID','Photon_mvaID_Fall17V1p1','Photon_cutBased','Photon_cutBased_Fall17V1Bitmap'
+        'Photon_pt','Photon_eta','Photon_phi','Photon_mvaID','Photon_mvaID_Fall17V1p1','Photon_cutBased','Photon_cutBased_Fall17V1Bitmap',
+        'Photon_seedGain','Photon_dEsigmaDown','Photon_dEsigmaUp'
     ]
 
     if not ana.isData:
@@ -108,6 +110,7 @@ if(".txt" in options.input):
     for iFile in lines:
         localCopy(iFile)
         selection = analyzer(iFile.split("/")[-1])
+        #selection = analyzer(iFile)
         selection = ApplyKinematicsSnap(selection)
         selection = ApplyStandardCorrections(selection,year,process)
 
@@ -117,12 +120,13 @@ if(".txt" in options.input):
             os.makedirs(odir)
 
         Snapshot(selection,year,options.output)
-        os.system("rm {0}".format(iFile.split("/")[-1]))
+        #os.system("rm {0}".format(iFile.split("/")[-1]))
 
 
 else:
     localCopy(options.input)
     selection = analyzer(options.input.split("/")[-1])
+    #selection = analyzer(options.input)
     selection = ApplyKinematicsSnap(selection)
     selection = ApplyStandardCorrections(selection,year,process)
 

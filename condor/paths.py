@@ -14,3 +14,7 @@ TIMBERENV_DIR       = "/users/mrogul/Work/Hgamma/"
 CMSSW_DIR           = "/users/mrogul/Work/Hgamma/CMSSW_12_3_0/"
 #Where to store condor logs for template jobs
 TEMPLATE_JOB_DIR    = HGAMMA_DIR+"/condor/template_jobs/"
+#Where CR selection trees are stored
+SELECTION_CR_DIR    = HGAMMA_DIR+"/results/selection_CR/"
+#Where to store condor logs for template CR jobs
+TEMPLATE_CR_JOB_DIR = HGAMMA_DIR+"/condor/template_jobs/"

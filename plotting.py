@@ -573,8 +573,12 @@ def merge_low_sig_high(hLow,hSig,hHigh,hName="temp"):
 def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidthDivision=True):
 
     if(region=="pass" or region=="T" or region=="M"):
-        labels              = ["Data","Non-resonant","W+Gamma","Z+Gamma","H+Gamma"]
-        tags                = ["data_obs","qcd","WGamma","ZGamma","Hgamma"]
+        if("HZy" in postfitShapesFile):
+            labels              = ["Data","Non-resonant","W+Gamma","Z+Gamma","H+Gamma (HZy coupling)"]
+            tags                = ["data_obs","qcd","WGamma","ZGamma","Hgamma_HZy"]
+        else:
+            labels              = ["Data","Non-resonant","W+Gamma","Z+Gamma","H+Gamma"]
+            tags                = ["data_obs","qcd","WGamma","ZGamma","Hgamma"]
         colors              = ["black","deepskyblue","slateblue","blue","red"]
     else:
         labels              = ["Data","Non-resonant","W+Gamma","Z+Gamma"]
@@ -667,7 +671,8 @@ if __name__ == '__main__':
     #Postfit
     cmsswArea       = "../CMSSW_10_6_14/src/"
     polyOrder       = "1"
-    workingAreas    = ["tight_medium"]
+    #workingAreas    = ["tight_medium"]
+    workingAreas    = ["tight_medium_HZy"]
     for workingArea in workingAreas:
         baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
         fitFile         = baseDir+"postfitshapes_b.root"

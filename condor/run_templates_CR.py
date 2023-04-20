@@ -1,20 +1,20 @@
 import os
 import glob
 import sys
-from paths import SELECTION_DIR, TEMPLATE_JOB_DIR
+from paths import SELECTION_CR_DIR, TEMPLATE_CR_JOB_DIR
 from templates import templates_template, selection_condor
 from pathlib import Path
 import re
 import stat
 
-#python run_templates.py tight medium
+#python run_templates_CR.py tight medium
 
-TEMPLATE_DIR = SELECTION_DIR.replace("selection","templates")
+TEMPLATE_DIR = SELECTION_CR_DIR.replace("selection","templates")
 
 wpUp   = sys.argv[1]
 wpLo   = sys.argv[2]
 args = ""
-template_jobs_wp_dir = os.path.join(TEMPLATE_JOB_DIR,"{0}_{1}".format(wpUp,wpLo))
+template_jobs_wp_dir = os.path.join(TEMPLATE_CR_JOB_DIR,"{0}_{1}".format(wpUp,wpLo))
 Path(template_jobs_wp_dir).mkdir(exist_ok=True, parents=True)
 
 template_jobs_log_dir = os.path.join(template_jobs_wp_dir,"output")
@@ -28,7 +28,7 @@ wp_loose	= {"2016APV":0.9088,"2016":0.9137,"2017":0.9105,"2018":0.9172}
 
 wp_vals   	= {"tight":wp_tight, "medium":wp_medium, "loose":wp_loose}
 for year in ["2016","2016APV","2017","2018"]:
-	evtSelDir = "{0}/{1}/".format(SELECTION_DIR,year)
+	evtSelDir = "{0}/{1}/".format(SELECTION_CR_DIR,year)
 	tplDir    = "{0}/{1}_{2}/{3}".format(TEMPLATE_DIR,wpUp,wpLo,year)
 	nomFiles  = glob.glob('{0}/*nom.root'.format(evtSelDir))
 	for nomFile in nomFiles:

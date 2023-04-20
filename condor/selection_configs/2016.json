@@ -43,5 +43,8 @@
   },
   "Hgamma": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2016/Hgamma"
+  },
+  "Hgamma_HZy": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2016/Hgamma_HZy"
   }
 }

@@ -60,7 +60,7 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
 
     #processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","GJetsHT200","GJetsHT400","GJetsHT600","TTGJets","Hgamma"
     #,"QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
-    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma","QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
+    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma","Hgamma_HZy","QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
     for year in ['2016','2016APV','2017','2018']:
         print(year)
         nonScaledDir = "results/templates/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
@@ -96,6 +96,34 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
         SinglePhotonSamples = [nonScaledDir+f for f in os.listdir(nonScaledDir) if (os.path.isfile(os.path.join(nonScaledDir, f)) and "SinglePhoton" in f)]
         mergeSamples(SinglePhotonSamples,"{0}/SinglePhoton{1}.root".format(lumiScaledDir,year[2:]),"SinglePhoton201[0-9][a-zA-Z0-9]+_","data_obs_")
 
+def lumiNormalizationCR(wp="tight",tagger="ParticleNet"):
+    processes = ["ZJets400","ZJets600","ZJets800","WJets400","WJets600","WJets800"]
+    for year in ['2016','2016APV','2017','2018']:
+        print(year)
+        nonScaledDir = "results/templates_CR/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
+        lumiScaledDir = "results/templates_CR/{2}/{0}/{1}/scaled/".format(wp,year,tagger)
+
+        for proc in processes:
+            nonScaledFile = "{0}/{1}.root".format(nonScaledDir,proc)
+            if(os.path.isfile(nonScaledFile)):
+                try:                 
+                    normalizeProcess(proc,year,"{0}/{1}.root".format(nonScaledDir,proc),"{0}/{1}.root".format(lumiScaledDir,proc))
+                except:
+                    print("Couldn't normalize {0}".format(proc))
+            else:
+                print("{0} does not exist, skipping!".format(nonScaledFile))
+        
+        WJetsSamples = ["WJets400.root","WJets600.root","WJets800.root"]
+        WJetsSamples = [lumiScaledDir+f for f in WJetsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        mergeSamples(WJetsSamples,"{0}/WJets{1}.root".format(lumiScaledDir,year[2:]),"[A-Z]Jets\d+_","WJets_")
+
+        ZJetsSamples = ["ZJets400.root","ZJets600.root","ZJets800.root"]
+        ZJetsSamples = [lumiScaledDir+f for f in ZJetsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        mergeSamples(ZJetsSamples,"{0}/ZJets{1}.root".format(lumiScaledDir,year[2:]),"[A-Z]Jets\d+_","ZJets_")
+
+        JetHTSamples = [nonScaledDir+f for f in os.listdir(nonScaledDir) if (os.path.isfile(os.path.join(nonScaledDir, f)) and "JetHT" in f)]
+        mergeSamples(JetHTSamples,"{0}/JetHT{1}.root".format(lumiScaledDir,year[2:]),"JetHT201[0-9][a-zA-Z0-9]+_","data_obs_")
+
 def mergeRunII(wp,tagger):
     lumiScaledDir = "results/templates/{0}/{1}".format(tagger,wp)
     runIIDir      = "results/templates/{0}/{1}/RunII/scaled/".format(tagger,wp)
@@ -108,12 +136,19 @@ def mergeRunII(wp,tagger):
     os.system("hadd -f {0}/TTGJets.root {1}/201*/scaled/TTGJets.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/QCD.root {1}/201*/scaled/QCD1?.root {1}/201*/scaled/QCD1?APV.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/Hgamma.root {1}/201*/scaled/Hgamma.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/Hgamma_HZy.root {1}/201*/scaled/Hgamma_HZy.root".format(runIIDir,lumiScaledDir))
 
+def mergeRunIICR(wp,tagger):
+    lumiScaledDir = "results/templates_CR/{0}/{1}".format(tagger,wp)
+    runIIDir      = "results/templates_CR/{0}/{1}/RunII/scaled/".format(tagger,wp)
+    if not os.path.exists(runIIDir):
+        os.makedirs(runIIDir)
+    os.system("hadd -f {0}/JetHT.root {1}/201*/scaled/JetHT*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ZJets.root {1}/201*/scaled/ZJets1*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WJets.root {1}/201*/scaled/WJets1*.root".format(runIIDir,lumiScaledDir))
 
 if __name__ == '__main__':
-    #lumiNormalization(wp="tight",tagger="/")
-    #lumiNormalization(wp="medium",tagger="/")
-    #lumiNormalization(wp="loose",tagger="/")
-    lumiNormalization(wp="tight_medium",tagger="/")
-    #mergeRunII("medium","/")
-    mergeRunII("tight_medium","/")
+    #lumiNormalization(wp="tight_medium",tagger="/")
+    #mergeRunII("tight_medium","/")
+    lumiNormalizationCR(wp="tight_medium",tagger="/")
+    mergeRunIICR(wp="tight_medium",tagger="/")

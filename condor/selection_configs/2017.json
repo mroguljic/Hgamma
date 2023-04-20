@@ -23,6 +23,9 @@
   "Hgamma": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2017/Hgamma"
   },
+  "Hgamma_HZy": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/Hgamma_HZy"
+  },
   "GJets200": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets200"
   },

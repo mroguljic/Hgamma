@@ -25,12 +25,12 @@ if("2018/" in iDir):
 variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","pnetUp","pnetDown"]
 for variation in variations:
     if(variation!="nom"):
-        if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample):
+        if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample or "WJets" in sample or "ZJets" in sample):
             #Running variations only on some processes
             continue
-        if(("pnet" in variation) and not ("ZGamma" in sample or "Hgamma" in sample)):
+        if(("pnet" in variation) and not ("ZGamma" in sample or "Hgamma" in sample or "ZJets" in sample)):
             #Xbb SF variation only on processes with X->bb
-            continue           
+            continue
 
     inputTag = variation
     if "pnet" in variation:
@@ -45,6 +45,9 @@ for variation in variations:
         mode="RECREATE"
     else:
         mode="UPDATE"
-    cmd = "python templateMaker.py -i {0} -o {1} -y {2} -p {3} -v {4} -m {5} -w {6} -w {7}".format(inputFile,outputFile,year,sample,variation,mode,wpUp,wpLo)
+    if("_CR" in outputFile):
+        cmd = "python templateMaker_CR.py -i {0} -o {1} -y {2} -p {3} -v {4} -m {5} -w {6} -w {7}".format(inputFile,outputFile,year,sample,variation,mode,wpUp,wpLo)
+    else:
+        cmd = "python templateMaker.py -i {0} -o {1} -y {2} -p {3} -v {4} -m {5} -w {6} -w {7}".format(inputFile,outputFile,year,sample,variation,mode,wpUp,wpLo)
     print(cmd)
     os.system(cmd)
