@@ -162,7 +162,7 @@ def mergeLoMassBins(hist,edges):
     return newHist, [newEdges]
 
 
-def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",proj="X",mergeMassBins=False,tagger="ParticleNet"):
+def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",proj="X",mergeMassBins=False):
     histos  = []
     labels  = []
     edges   = []
@@ -172,8 +172,7 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
     labelsData = []
     data = sorted(data.items(), key=lambda x: x[1]["order"])#VERY HANDY, reads samples in order
     for sample, sample_cfg in data:
-        tempFile = r.TFile.Open(sample_cfg["file"].replace("templates/","templates/{0}/".format(tagger)))
-        #print("Opening ", sample_cfg["file"].replace("templates/","templates/{0}/".format(tagger)))
+        tempFile = r.TFile.Open(sample_cfg["file"])
         if(proj=="X"):
             h = tempFile.Get("{0}_{1}".format(sample,var)).ProjectionX()
         else:
@@ -964,7 +963,8 @@ def writeSFTable(bestOrders,cmsswArea):
 if __name__ == '__main__':
 
 
-    for year in ["2016","2016APV","2017","2018","RunII"]:
+    #for year in ["2016","2016APV","2017","2018","RunII"]:
+    for year in ["RunII"]:
         odir = "results/plots_CR/tight/{0}/".format(year)
         Path(odir).mkdir(parents=True, exist_ok=True)
         
@@ -985,47 +985,47 @@ if __name__ == '__main__':
             printMCYields(data,"CR_T",year)
             printMCYields(data,"CR_F",year)
 
-            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
-            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_pass_data.pdf".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
-            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,10**6],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
-            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[1,10**6],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
-            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[100,10**8],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
-            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_fail_data.pdf".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[100,10**8],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
-            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/pT_pass_data.png".format(odir),xTitle="$p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1,10**7],log=True,xRange=[450,2000],rebinX=1,luminosity=luminosity,proj="Y",tagger=tagger)
-            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/pT_fail_data.png".format(odir),xTitle="$p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[100,10**9],log=True,xRange=[450,2000],rebinX=1,luminosity=luminosity,proj="Y",tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_pass_data.pdf".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,10**6],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[1,10**6],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[100,10**8],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_fail_data.pdf".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[100,10**8],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/pT_pass_data.png".format(odir),xTitle="$p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1,10**7],log=True,xRange=[450,2000],rebinX=1,luminosity=luminosity,proj="Y")
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/pT_fail_data.png".format(odir),xTitle="$p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[100,10**9],log=True,xRange=[450,2000],rebinX=1,luminosity=luminosity,proj="Y")
 
 
-            f = r.TFile.Open(data["data_obs"]["file"])#"JetHT16.root")
-            print(data["data_obs"]["file"])
-            hTotal = f.Get("data_obs_pT0noTriggers_nom")
-            hPass  = f.Get("data_obs_pT0triggersAll_nom")
-            eff = r.TEfficiency(hPass,hTotal)
-            eff.SetName("trig_eff")
-            #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
-            # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
-            # g.cd()
-            # eff.Write()
-            # g.Close()
+        #     f = r.TFile.Open(data["data_obs"]["file"])#"JetHT16.root")
+        #     print(data["data_obs"]["file"])
+        #     hTotal = f.Get("data_obs_pT0noTriggers_nom")
+        #     hPass  = f.Get("data_obs_pT0triggersAll_nom")
+        #     eff = r.TEfficiency(hPass,hTotal)
+        #     eff.SetName("trig_eff")
+        #     #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
+        #     # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
+        #     # g.cd()
+        #     # eff.Write()
+        #     # g.Close()
 
-            plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year))
+        #     plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year))
 
-            hTotal = f.Get("data_obs_noTriggers_nom").ProjectionX()
-            hPass  = f.Get("data_obs_triggersAll_nom").ProjectionX()
-            hPass.RebinX(5)
-            hTotal.RebinX(5)
-            plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_M_{1}.pdf".format(odir,year),xlabel="$M_{PNet}$ [GeV]",ylabel="Trigger efficiency")
-
-
-        with open("plotConfigs/Vjets{0}.json".format(year)) as json_file:
-            data = json.load(json_file)
-            plotVJets(data,"VpT_CR_F_nom","{0}/vpT_fail_lin.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=False,xRange=[0,1500],yRange=[1.,5500],rebinX=1,luminosity=luminosity)
-            plotVJets(data,"VpT_CR_T_nom","{0}/vpT_pass_lin.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=False,xRange=[0,1500],yRange=[1.,300],rebinX=1,luminosity=luminosity)
-            plotVJets(data,"VpT_CR_F_nom","{0}/vpT_fail.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=True,xRange=[0,1500],yRange=[1.,10**5],rebinX=1,luminosity=luminosity)
-            plotVJets(data,"VpT_CR_T_nom","{0}/vpT_pass.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=True,xRange=[0,1500],yRange=[1.,10**3],rebinX=1,luminosity=luminosity)
+        #     hTotal = f.Get("data_obs_noTriggers_nom").ProjectionX()
+        #     hPass  = f.Get("data_obs_triggersAll_nom").ProjectionX()
+        #     hPass.RebinX(5)
+        #     hTotal.RebinX(5)
+        #     plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_M_{1}.pdf".format(odir,year),xlabel="$M_{PNet}$ [GeV]",ylabel="Trigger efficiency")
 
 
-            plotVJets(data,"H_m_pT_CR_F__nominal","{0}/mVJets_fail_lin.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / 5 GeV",log=False,xRange=[40,150],yRange=[0,5*10**4],rebinX=1,luminosity=luminosity,proj="X")
-            plotVJets(data,"H_m_pT_CR_T__nominal","{0}/mVJets_pass_lin.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / 5 GeV",log=False,xRange=[40,150],yRange=[0,1200],rebinX=1,luminosity=luminosity,proj="X")
+        # with open("plotConfigs/Vjets{0}.json".format(year)) as json_file:
+        #     data = json.load(json_file)
+        #     plotVJets(data,"VpT_CR_F_nom","{0}/vpT_fail_lin.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=False,xRange=[0,1500],yRange=[1.,5500],rebinX=1,luminosity=luminosity)
+        #     plotVJets(data,"VpT_CR_T_nom","{0}/vpT_pass_lin.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=False,xRange=[0,1500],yRange=[1.,300],rebinX=1,luminosity=luminosity)
+        #     plotVJets(data,"VpT_CR_F_nom","{0}/vpT_fail.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=True,xRange=[0,1500],yRange=[1.,10**5],rebinX=1,luminosity=luminosity)
+        #     plotVJets(data,"VpT_CR_T_nom","{0}/vpT_pass.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=True,xRange=[0,1500],yRange=[1.,10**3],rebinX=1,luminosity=luminosity)
+
+
+        #     plotVJets(data,"H_m_pT_CR_F__nominal","{0}/mVJets_fail_lin.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / 5 GeV",log=False,xRange=[40,150],yRange=[0,5*10**4],rebinX=1,luminosity=luminosity,proj="X")
+        #     plotVJets(data,"H_m_pT_CR_T__nominal","{0}/mVJets_pass_lin.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / 5 GeV",log=False,xRange=[40,150],yRange=[0,1200],rebinX=1,luminosity=luminosity,proj="X")
 
     # #Postfit T
     # tagger          = "Hbb"

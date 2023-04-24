@@ -18,6 +18,7 @@
  "QCD700": {"xsec": 6440},
  "QCD500": {"xsec": 30310},
  "TTHadronic": {"xsec": 377.96},
+ "TTbarHadronic": {"xsec": 377.96},
  "WJets400": {"xsec": 277},
  "WJets600": {"xsec": 59.3},
  "WJets800": {"xsec": 28.8},
@@ -25,6 +26,7 @@
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
  "TTSemileptonic": {"xsec": 365.34},
+ "ggFHbb": {"xsec": 0.274},
  "lumi":16800
  },
 "2016APV":{
@@ -46,6 +48,7 @@
  "QCD700": {"xsec": 6440},
  "QCD500": {"xsec": 30310},
  "TTHadronic": {"xsec": 377.96},
+ "TTbarHadronic": {"xsec": 377.96},
  "TTSemileptonic": {"xsec": 365.34},
  "WJets400": {"xsec": 277},
  "WJets600": {"xsec": 59.3},
@@ -53,6 +56,7 @@
  "ZJets400": {"xsec": 114.2},
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
+ "ggFHbb": {"xsec": 0.274},
  "lumi":19500
  },
 "2017":{
@@ -74,6 +78,7 @@
  "QCD700": {"xsec": 6440},
  "QCD500": {"xsec": 30310},
  "TTHadronic": {"xsec": 377.96},
+ "TTbarHadronic": {"xsec": 377.96},
  "TTSemileptonic": {"xsec": 365.34},
  "WJets400": {"xsec": 277},
  "WJets600": {"xsec": 59.3},
@@ -81,6 +86,7 @@
  "ZJets400": {"xsec": 114.2},
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
+ "ggFHbb": {"xsec": 0.274},
  "lumi":41500
 },
  "2018":{
@@ -102,6 +108,7 @@
  "QCD700": {"xsec": 6440},
  "QCD500": {"xsec": 30310},
  "TTHadronic": {"xsec": 377.96},
+ "TTbarHadronic": {"xsec": 377.96},
  "TTSemileptonic": {"xsec": 365.34},
  "WJets400": {"xsec": 277},
  "WJets600": {"xsec": 59.3},
@@ -109,6 +116,7 @@
  "ZJets400": {"xsec": 114.2},
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
+ "ggFHbb": {"xsec": 0.274},
  "lumi":59800
  }
 }

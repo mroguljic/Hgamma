@@ -97,7 +97,8 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
         mergeSamples(SinglePhotonSamples,"{0}/SinglePhoton{1}.root".format(lumiScaledDir,year[2:]),"SinglePhoton201[0-9][a-zA-Z0-9]+_","data_obs_")
 
 def lumiNormalizationCR(wp="tight",tagger="ParticleNet"):
-    processes = ["ZJets400","ZJets600","ZJets800","WJets400","WJets600","WJets800"]
+    processes = ["QCD700","QCD1000","QCD1500","QCD2000","ZJets400","ZJets600","ZJets800","WJets400",
+    "WJets600","WJets800","TTbarHadronic","ggFHbb"]
     for year in ['2016','2016APV','2017','2018']:
         print(year)
         nonScaledDir = "results/templates_CR/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
@@ -112,6 +113,10 @@ def lumiNormalizationCR(wp="tight",tagger="ParticleNet"):
                     print("Couldn't normalize {0}".format(proc))
             else:
                 print("{0} does not exist, skipping!".format(nonScaledFile))
+
+        QCDsamples = ["QCD700.root","QCD1000.root","QCD1500.root","QCD2000.root"]
+        QCDsamples = [lumiScaledDir+f for f in QCDsamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        mergeSamples(QCDsamples,"{0}/QCD{1}.root".format(lumiScaledDir,year[2:]),"QCD\d+_","QCD_")
         
         WJetsSamples = ["WJets400.root","WJets600.root","WJets800.root"]
         WJetsSamples = [lumiScaledDir+f for f in WJetsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
@@ -120,6 +125,10 @@ def lumiNormalizationCR(wp="tight",tagger="ParticleNet"):
         ZJetsSamples = ["ZJets400.root","ZJets600.root","ZJets800.root"]
         ZJetsSamples = [lumiScaledDir+f for f in ZJetsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
         mergeSamples(ZJetsSamples,"{0}/ZJets{1}.root".format(lumiScaledDir,year[2:]),"[A-Z]Jets\d+_","ZJets_")
+        
+        ttSamples = ["TTbarHadronic.root"]
+        ttSamples = [lumiScaledDir+f for f in ttSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        mergeSamples(ttSamples,"{0}/TTbar{1}.root".format(lumiScaledDir,year[2:]),"TTbarSemileptonic|TTbarMtt700|TTbarMtt1000|TTbarHadronic","TTbar")
 
         JetHTSamples = [nonScaledDir+f for f in os.listdir(nonScaledDir) if (os.path.isfile(os.path.join(nonScaledDir, f)) and "JetHT" in f)]
         mergeSamples(JetHTSamples,"{0}/JetHT{1}.root".format(lumiScaledDir,year[2:]),"JetHT201[0-9][a-zA-Z0-9]+_","data_obs_")
@@ -146,6 +155,9 @@ def mergeRunIICR(wp,tagger):
     os.system("hadd -f {0}/JetHT.root {1}/201*/scaled/JetHT*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/ZJets.root {1}/201*/scaled/ZJets1*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/WJets.root {1}/201*/scaled/WJets1*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/TTbar.root {1}/201*/scaled/TTbar1*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ggFHbb.root {1}/201*/scaled/ggFHb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/QCD.root {1}/201*/scaled/QCD1?.root {1}/201*/scaled/QCD1?APV.root".format(runIIDir,lumiScaledDir))
 
 if __name__ == '__main__':
     #lumiNormalization(wp="tight_medium",tagger="/")
