@@ -171,7 +171,6 @@ def eventSelection(options):
     else:
         evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]')
     evtColumns.Add("Gamma_eta","Photon_eta[0]")
-    evtColumns.Add("Gamma_gain","Photon_seedGain[0]")
     evtColumns.Add("Gamma_phi","Photon_phi[0]")
     evtColumns.Add("nEle","nElectrons(nElectron,Electron_cutBased,0,Electron_pt,20,Electron_eta)")
     #0:fail,1:veto,2:loose,3:medium,4:tight
@@ -192,7 +191,7 @@ def eventSelection(options):
     a.Apply([evtColumns])
 
     #Apply photon energy scale/resolution unc. scale factors
-    if("photon_es" in options.variation):
+    if("photonEs" in options.variation):
         import correctionlib
         correctionlib.register_pyroot_binding()
         if(year=="2016APV"):
@@ -201,19 +200,21 @@ def eventSelection(options):
             yearAlt = "2016postVFP"
         else:
             yearAlt = year
-        ROOT.gInterpreter.Declare('auto photon_scale_set = correction::CorrectionSet::from_file("data/EGM_ScaleUnc_{0}.json");'.format(year))
+        ROOT.gInterpreter.Declare('auto photon_scale_set = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/EGM_ScaleUnc_{0}.json");'.format(year))
         ROOT.gInterpreter.Declare('auto photon_scale_unc = photon_scale_set->at("UL-EGM_ScaleUnc");')
-        if(options.variation=="photon_esUp"):
+        if(options.variation=="photonEsUp"):
+            a.Define("Gamma_gain","Photon_seedGain[0]")
             a.Define('scale_corr','photon_scale_unc->evaluate({"%s","scaleup",Gamma_eta,Gamma_gain})'%yearAlt)
             a.Define("Gamma_pt","Photon_pt[0]*scale_corr")
-        elif(options.variation=="photon_esDown"):
+        elif(options.variation=="photonEsDown"):
+            a.Define("Gamma_gain","Photon_seedGain[0]")
             a.Define('scale_corr','photon_scale_unc->evaluate({"%s","scaledown",Gamma_eta,Gamma_gain})'%yearAlt)
             a.Define("Gamma_pt","Photon_pt[0]*scale_corr")
         else:
             print("WARNING: Unknown photon es variation")
-    elif(options.variation=="photon_erUp"):
+    elif(options.variation=="photonErUp"):
         a.Define("Gamma_pt","Photon_pt[0]*(1+Photon_dEsigmaUp[0])")
-    elif(options.variation=="photon_erDown"):
+    elif(options.variation=="photonErDown"):
         a.Define("Gamma_pt","Photon_pt[0]*(1+Photon_dEsigmaDown[0])")
     else:
         a.Define("Gamma_pt","Photon_pt[0]")

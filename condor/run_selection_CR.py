@@ -4,7 +4,8 @@ import os, sys, re
 from templates import *
 from run_skim import createDirIfNotExist
 import ROOT as r
-from paths import SELECTION_DIR, SELECTION_JOB_DIR, SKIM_DIR
+from paths import SELECTION_CR_DIR, SELECTION_CR_JOB_DIR, SKIM_CR_DIR
+import json
 
 def split_jobs(files, njobs):
     for i in range(0, len(files), njobs):
@@ -34,13 +35,12 @@ def checkForCongregateResult(outDir,sample):
     return True
 
 def checkIfAlreadyProcessed(fileBase,outDir,sample):
-    if("ZGamma" in sample or "WGamma" in sample or "Hgamma" in sample):
+    varFlag = False
+    if ("ZJets" in sample or "WJets" in sample or "ggFHbb" in sample):
         varFlag = True
-    else:
-        varFlag = False
 
     if varFlag:
-        variations  = ["nom","jerUp","jerDown","jesUp","jesDown","jmsUp","jmsDown","jmrUp","jmrDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
+        variations  = ["nom","jerUp","jerDown","jesUp","jesDown","jmsUp","jmsDown","jmrUp","jmrDown"]
     else:
         variations  = ["nom"]
 
@@ -61,11 +61,17 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
         createDirIfNotExist(os.path.join(sampleJobs_dir, 'input'))
         createDirIfNotExist(os.path.join(sampleJobs_dir, 'output'))
         createDirIfNotExist(sampleOut_dir)
-        if("ZGamma" in sample or "WGamma" in sample or "Hgamma" in sample):
-            exeScript = selection_template.replace("JOB_DIR",sampleJobs_dir)
+        
+        if ("ZJets" in sample or "WJets" in sample or "ggFHbb" in sample):
+            #Only running variation on V+Jets (QCD is data-driven)
+            exeScript = selection_template_CR.replace("JOB_DIR",sampleJobs_dir)
+            nPerJob   = nFiles
+            if("800" in sample):
+                #samples with highest HT take more time to process, so process fewer files per job
+                nPerJob   = 4 
         else:
-            exeScript = selection_template_data.replace("JOB_DIR",sampleJobs_dir)
-        nPerJob   = nFiles
+            exeScript = selection_template_data_CR.replace("JOB_DIR",sampleJobs_dir)
+            nPerJob   = nFiles
         open(os.path.join(sampleJobs_dir, 'input', 'run_{}.sh'.format(sample)), 'w').write(exeScript)
         os.system("chmod +x {0}".format(os.path.join(sampleJobs_dir, 'input', 'run_{}.sh'.format(sample))))
 
@@ -75,7 +81,8 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
         open(os.path.join(sampleJobs_dir, 'input', 'condor_{}.condor'.format(sample)), 'w').write(condor_script)
 
         #Split input files
-        skimDirectory   = os.path.join(SKIM_DIR, year,sample)
+        #skimDirectory   = sample_cfg["dataset"]
+        skimDirectory   = os.path.join(SKIM_CR_DIR, year,sample)
         skimFiles       = [os.path.join(skimDirectory, f) for f in os.listdir(skimDirectory) if os.path.isfile(os.path.join(skimDirectory, f))]
         job_list        = split_jobs(skimFiles, nPerJob)
 
@@ -109,8 +116,7 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
 
         if(nToRun!=0 and congregateFlag==False):
             submissionCmds.append("condor_submit {0}".format(os.path.join(sampleJobs_dir, 'input', 'condor_{}.condor'.format(sample))))
-    #For some reason the last submission does not correctly take arguments
-    #Needs to be submitted to condor manually from shell
+    
     for cmd in submissionCmds:
         print(cmd)
         if(submitFlag):
@@ -122,12 +128,12 @@ def haddResults(outDir):
     cwd = os.getcwd()
     os.chdir(outDir)
     directories= [d for d in os.listdir(os.getcwd()) if os.path.isdir(d)]
+    variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown"]
+
     for d in directories:
-        if("ZGamma" in d or "WGamma" in d or "Hgamma" in d):
-           variations  = ["nom","jerUp","jerDown","jesUp","jesDown","jmsUp","jmsDown","jmrUp","jmrDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
-        else:
-           variations  = ["nom"]
         for variation in variations:
+            if(variation!="nom" and not ("WJets" in d or "ZJets" in d or "ggFHbb" in d)):
+                continue
             cmd = "hadd {0}_{1}.root {0}/*{1}*root".format(d,variation)
             if not os.path.exists("{0}_{1}.root".format(d,variation)):
                 print(cmd)
@@ -135,14 +141,12 @@ def haddResults(outDir):
 
         os.system("rm -r {0}".format(d))
     os.chdir(cwd)
-            
-
-def runYear(year,submit=False):
-    import json
-    datasets    = "selection_configs/{0}.json".format(year)
-    outDir      = "{0}/{1}".format(SELECTION_DIR,year)
-    jobsDir     = "{0}/{1}".format(SELECTION_JOB_DIR,year)
-    filesPerJob = 50
+        
+def runYear(year):
+    datasets    = "selection_configs/CR/{0}.json".format(year)
+    outDir      = "{0}/{1}".format(SELECTION_CR_DIR,year)
+    jobsDir     = "{0}/{1}".format(SELECTION_CR_JOB_DIR,year)
+    filesPerJob = 20
 
     createDirIfNotExist(outDir)
 
@@ -157,7 +161,7 @@ def runYear(year,submit=False):
 
     with open(datasets) as config_file:
         config  = json.load(config_file)
-        nJobs   = create_jobs(config, year=year,out_dir=outDir,jobs_dir=jobsDir,nFiles=filesPerJob,checkInput=checkInputFlag,submitFlag=submit)
+        nJobs   = create_jobs(config, year=year,out_dir=outDir,jobs_dir=jobsDir,nFiles=filesPerJob,checkInput=checkInputFlag,submitFlag=False)
 
     if(nJobs==0):
         print("All files processed, hadding results")
@@ -174,10 +178,9 @@ def main():
         years=["2016APV","2016","2017","2018"]
     else:
         years = [args.year]
-    
+
     for year in years:
-        runYear(year,submit=False)
-                    
+        runYear(year)
 
             
 

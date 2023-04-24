@@ -157,7 +157,8 @@ def eventSelection(options):
         histos.append(hvPt)
         histos.append(h_HT)
     #------------------------------#
-
+    #Photon veto
+    a.Cut("photonVeto","!(nPhoton>0 && Photon_cutBased[0]==3 && abs(Photon_eta[0])<2.4 && Photon_pt[0]>300)")
 
 
     #----------Selection-----------#

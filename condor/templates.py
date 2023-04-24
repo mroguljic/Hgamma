@@ -32,6 +32,33 @@ python $WORK_DIR/eventSelection.py $* --var jmsUp
 python $WORK_DIR/eventSelection.py $* --var jmsDown
 python $WORK_DIR/eventSelection.py $* --var jmrUp
 python $WORK_DIR/eventSelection.py $* --var jmrDown
+python $WORK_DIR/eventSelection.py $* --var photonEsUp
+python $WORK_DIR/eventSelection.py $* --var photonEsDown
+python $WORK_DIR/eventSelection.py $* --var photonErUp
+python $WORK_DIR/eventSelection.py $* --var photonErDown
+'''.format(CMSSW_DIR,TIMBERENV_DIR,HGAMMA_DIR)
+
+
+selection_template_CR='''#!/bin/bash
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+cd {0}
+eval `scramv1 runtime -sh`
+cd {1}
+source timber-env/bin/activate
+
+export WORK_DIR={2}
+cd JOB_DIR
+
+echo eventSelection_CR.py $*
+python $WORK_DIR/eventSelection_CR.py $* --var nom
+python $WORK_DIR/eventSelection_CR.py $* --var jesDown
+python $WORK_DIR/eventSelection_CR.py $* --var jesUp
+python $WORK_DIR/eventSelection_CR.py $* --var jerDown
+python $WORK_DIR/eventSelection_CR.py $* --var jerUp
+python $WORK_DIR/eventSelection_CR.py $* --var jmsUp
+python $WORK_DIR/eventSelection_CR.py $* --var jmsDown
+python $WORK_DIR/eventSelection_CR.py $* --var jmrUp
+python $WORK_DIR/eventSelection_CR.py $* --var jmrDown
 '''.format(CMSSW_DIR,TIMBERENV_DIR,HGAMMA_DIR)
 
 selection_template_data='''#!/bin/bash
@@ -46,6 +73,21 @@ cd JOB_DIR
 
 echo eventSelection.py $*
 python $WORK_DIR/eventSelection.py $* --var nom
+'''.format(CMSSW_DIR,TIMBERENV_DIR,HGAMMA_DIR)
+
+
+selection_template_data_CR='''#!/bin/bash
+source /cvmfs/cms.cern.ch/cmsset_default.sh
+cd {0}
+eval `scramv1 runtime -sh`
+cd {1}
+source timber-env/bin/activate
+
+export WORK_DIR={2}
+cd JOB_DIR
+
+echo eventSelection_CR.py $*
+python $WORK_DIR/eventSelection_CR.py $* --var nom
 '''.format(CMSSW_DIR,TIMBERENV_DIR,HGAMMA_DIR)
 
 skim_template='''#!/bin/bash

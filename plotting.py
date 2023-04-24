@@ -116,7 +116,7 @@ def mergeLoMassBins(hist,edges):
 def blindHiggsMass(hist):
     for i in range(1,hist.GetNbinsX()+1):
         binCenter = hist.GetBinCenter(i)
-        if binCenter>110 and binCenter<140:
+        if binCenter>110 and binCenter<145:
             hist.SetBinContent(i,0)
     return hist
 
@@ -626,67 +626,67 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
 if __name__ == '__main__':
 
     wp = "tight_medium"
-    # for year in ["2016","2016APV","2017","2018","RunII"]:
-    # #for year in ["RunII"]:
-    #     odir = "results/plots/{0}/{1}/".format(wp,year)
-    #     Path(odir).mkdir(parents=True, exist_ok=True)
+    for year in ["2016","2016APV","2017","2018","RunII"]:
+    #for year in ["RunII"]:
+        odir = "results/plots/{0}/{1}/".format(wp,year)
+        Path(odir).mkdir(parents=True, exist_ok=True)
         
-    #     if(year=="2016APV"):
-    #         luminosity="19.5"
-    #     elif(year=="2016"):
-    #         luminosity="16.8"
-    #     elif(year=="2017"):
-    #         luminosity="41.5"
-    #     elif(year=="2018"):
-    #         luminosity="59.8"
-    #     elif(year=="RunII"):
-    #         luminosity="138"
+        if(year=="2016APV"):
+            luminosity="19.5"
+        elif(year=="2016"):
+            luminosity="16.8"
+        elif(year=="2017"):
+            luminosity="41.5"
+        elif(year=="2018"):
+            luminosity="59.8"
+        elif(year=="RunII"):
+            luminosity="138"
 
-    #     with open("plotConfigs/{0}_{1}.json".format(year,wp)) as json_file:
-    #         data = json.load(json_file)
-    #         plotVarStack(data,"H_m_T__nominal","{0}/m_lin_T_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
-    #         plotVarStack(data,"H_m_M__nominal","{0}/m_lin_M_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
-    #         plotVarStack(data,"H_m_F__nominal","{0}/m_lin_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
-    #         plotVarStack(data,"H_m_F__nominal","{0}/m_lin_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
-    #         plotVarStackMC(data,"Gamma_pT_T_nom","{0}/gamma_pT_T_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
-    #         plotVarStackMC(data,"Gamma_pT_M_nom","{0}/gamma_pT_M_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
-    #         plotVarStackMC(data,"Gamma_pT_F_nom","{0}/gamma_pT_F_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
+        with open("plotConfigs/{0}_{1}.json".format(year,wp)) as json_file:
+            data = json.load(json_file)
+            plotVarStack(data,"H_m_T__nominal","{0}/m_lin_T_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_M__nominal","{0}/m_lin_M_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True)
+            plotVarStack(data,"H_m_F__nominal","{0}/m_lin_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+            plotVarStack(data,"H_m_F__nominal","{0}/m_lin_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[60,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,blind=False)
+            plotVarStackMC(data,"Gamma_pT_T_nom","{0}/gamma_pT_T_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
+            plotVarStackMC(data,"Gamma_pT_M_nom","{0}/gamma_pT_M_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
+            plotVarStackMC(data,"Gamma_pT_F_nom","{0}/gamma_pT_F_data.png".format(odir),xTitle="Photon $p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1.,None],log=True,xRange=[300,1000],rebinX=1,luminosity=luminosity,mergeMassBins=False)
 
-    #         f = r.TFile.Open(data["data_obs"]["file"])
-    #         print(data["data_obs"]["file"])
-    #         hTotal = f.Get("data_obs_GammapTnoTriggers_nom")
-    #         hPass  = f.Get("data_obs_GammapTtriggersAll_nom")
-    #         hPass.RebinX(5)
-    #         hTotal.RebinX(5)
-    #         eff = r.TEfficiency(hPass,hTotal)
-    #         eff.SetName("trig_eff")
-    #         #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
-    #         # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
-    #         # g.cd()
-    #         # eff.Write()
-    #         # g.Close()
+            f = r.TFile.Open(data["data_obs"]["file"])
+            print(data["data_obs"]["file"])
+            hTotal = f.Get("data_obs_GammapTnoTriggers_nom")
+            hPass  = f.Get("data_obs_GammapTtriggersAll_nom")
+            hPass.RebinX(5)
+            hTotal.RebinX(5)
+            eff = r.TEfficiency(hPass,hTotal)
+            eff.SetName("trig_eff")
+            #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
+            # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
+            # g.cd()
+            # eff.Write()
+            # g.Close()
 
-    #         plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year),ylabel="Trigger efficiency / 50 GeV")
+            plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year),ylabel="Trigger efficiency / 50 GeV")
 
-    #Postfit
-    cmsswArea       = "../CMSSW_10_6_14/src/"
-    polyOrder       = "1"
-    #workingAreas    = ["tight_medium"]
-    workingAreas    = ["tight_medium_HZy"]
-    for workingArea in workingAreas:
-        baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
-        fitFile         = baseDir+"postfitshapes_b.root"
-        Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
-        plotRPF(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder)
-        plotRPF(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder,passTag="T")
+    # #Postfit
+    # cmsswArea       = "../CMSSW_10_6_14/src/"
+    # polyOrder       = "1"
+    # #workingAreas    = ["tight_medium"]
+    # workingAreas    = ["tight_medium_HZy"]
+    # for workingArea in workingAreas:
+    #     baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
+    #     fitFile         = baseDir+"postfitshapes_b.root"
+    #     Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
+    #     plotRPF(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder)
+    #     plotRPF(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder,passTag="T")
 
-        try:
-            plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
-            plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
-            plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
-            plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True)
-            plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True)
-            plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=True)
-        except:
-           print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
+    #     try:
+    #         plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+    #         plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False)
+    #         plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False)
+    #         plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True)
+    #         plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True)
+    #         plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=True)
+    #     except:
+    #        print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
            

@@ -2,20 +2,20 @@
   "ZGamma": {
     "file": "results/templates/tight_medium/RunII/scaled/ZGamma.root",
     "color":"blue",
-    "label": "Z+Gamma",
-    "order": 1
+    "label": "Z+$\\gamma$",
+    "order": 4
   },
   "WGamma": {
     "file": "results/templates/tight_medium/RunII/scaled/WGamma.root",
     "color":"slateblue",
-    "label": "W+Gamma",
+    "label": "W+$\\gamma$",
     "order": 3
   },
   "GJets": {
     "file": "results/templates/tight_medium/RunII/scaled/GJets.root",
     "color":"deepskyblue",
-    "label": "Gamma+Jets",
-    "order": 2
+    "label": "$\\gamma$+Jets",
+    "order": 1
   },
   "QCD": {
     "file": "results/templates/tight_medium/RunII/scaled/QCD.root",
@@ -26,13 +26,13 @@
   "TTGJets": {
     "file": "results/templates/tight_medium/RunII/scaled/TTGJets.root",
     "color":"lavender",
-    "label": "ttbar+Gamma",
+    "label": "$t\\overline{t}+\\gamma$",
     "order": 2
   },
-  "Hgamma": {
-    "file": "results/templates/tight_medium/RunII/scaled/Hgamma.root",
+  "Hgamma_Hyy": {
+    "file": "results/templates/tight_medium/RunII/scaled/Hgamma_Hyy.root",
     "color":"tomato",
-    "label": "Hgamma",
+    "label": "$H+\\gamma\\;(H\\gamma\\gamma)$",
     "order": 7
   },
   "data_obs": {

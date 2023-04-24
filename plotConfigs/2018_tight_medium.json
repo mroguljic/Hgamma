@@ -2,37 +2,37 @@
   "ZGamma": {
     "file": "results/templates/tight_medium/2018/scaled/ZGamma.root",
     "color":"blue",
-    "label": "Z+Gamma",
+    "label": "Z+$\\gamma$",
     "order": 4
   },
   "WGamma": {
     "file": "results/templates/tight_medium/2018/scaled/WGamma.root",
     "color":"slateblue",
-    "label": "W+Gamma",
+    "label": "W+$\\gamma$",
     "order": 3
   },
   "GJets": {
     "file": "results/templates/tight_medium/2018/scaled/GJets18.root",
     "color":"deepskyblue",
-    "label": "Gamma+Jets",
+    "label": "$\\gamma$+Jets",
     "order": 1
   },
   "QCD": {
     "file": "results/templates/tight_medium/2018/scaled/QCD18.root",
     "color":"wheat",
     "label": "QCD",
-    "order": 1
+    "order": 2
   },
   "TTGJets": {
     "file": "results/templates/tight_medium/2018/scaled/TTGJets.root",
     "color":"lavender",
-    "label": "ttbar+Gamma",
+    "label": "$t\\overline{t}+\\gamma$",
     "order": 2
   },
-  "Hgamma": {
-    "file": "results/templates/tight_medium/2018/scaled/Hgamma.root",
+  "Hgamma_Hyy": {
+    "file": "results/templates/tight_medium/2018/scaled/Hgamma_Hyy.root",
     "color":"tomato",
-    "label": "Hgamma",
+    "label": "$H+\\gamma\\;(H\\gamma\\gamma)$",
     "order": 7
   },
   "data_obs": {

@@ -43,7 +43,7 @@ def plotRPF(postfitShapesFile,odir,polyOrder):
     hep.cms.text("Work in progress",loc=0)
     clb.set_label('$R_{P/F}$ x $10^{3}$')
 
-    ax.set_xlim([60,150])
+    ax.set_xlim([50,150])
     ax.set_ylim([450,2000])
 
 
@@ -146,7 +146,7 @@ def mergeLoMassBins(hist,edges):
     #Merges first 3 pairs of mass bins into 10 GeV bins to combat ParticleNet mass regression sculpting
     #Converts hist to Events / GeV
 
-    binsToRemove    = [1,3]
+    binsToRemove    = [1,3,5]
 
     newEdges        = np.delete(edges,binsToRemove)
     newHist         = np.delete(hist,binsToRemove)
@@ -162,7 +162,7 @@ def mergeLoMassBins(hist,edges):
     return newHist, [newEdges]
 
 
-def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",proj="X",mergeMassBins=False):
+def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",proj="X",mergeMassBins=False,tagger="ParticleNet"):
     histos  = []
     labels  = []
     edges   = []
@@ -172,7 +172,8 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
     labelsData = []
     data = sorted(data.items(), key=lambda x: x[1]["order"])#VERY HANDY, reads samples in order
     for sample, sample_cfg in data:
-        tempFile = r.TFile.Open(sample_cfg["file"])
+        tempFile = r.TFile.Open(sample_cfg["file"].replace("templates/","templates/{0}/".format(tagger)))
+        #print("Opening ", sample_cfg["file"].replace("templates/","templates/{0}/".format(tagger)))
         if(proj=="X"):
             h = tempFile.Get("{0}_{1}".format(sample,var)).ProjectionX()
         else:
@@ -195,9 +196,11 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
             if(sample_cfg["label"]=="ttbar"):
                 labels[-1]=r"t$\bar{t}$"#json restrictions workaround
 
-
     plt.style.use([hep.style.CMS])
-    f, ax       = plt.subplots()
+    f, axs = plt.subplots(2,1, sharex=True, sharey=False,gridspec_kw={'height_ratios': [4, 1],'hspace': 0.05})
+    axs = axs.flatten()
+    plt.sca(axs[0])
+
     centresData = (edgesData[0][:-1] + edgesData[0][1:])/2.
     errorsData  = np.sqrt(histosData[0])
     xerrorsData = []
@@ -222,38 +225,46 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
         print("QCD scale {0}".format(scale))
         histos[QCDposition] = histos[QCDposition]*scale
     #--------------------------#
-
-    hep.histplot(histos,edges[0],stack=True,ax=ax,label=labels,linewidth=1,histtype="fill",facecolor=colors,edgecolor='black')
+    hep.histplot(histos,edges[0],stack=True,ax=axs[0],label=labels,linewidth=1,histtype="fill",facecolor=colors,edgecolor='black')
     if mergeMassBins:
         plt.errorbar(centresData,histosData[0], yerr=errorsData, xerr=xerrorsData, fmt='o',color="k",label = labelsData[0])    
     else:
         plt.errorbar(centresData,histosData[0], yerr=errorsData, fmt='o',color="k",label = labelsData[0])    
     if(log):
-        ax.set_yscale("log")
-    ax.legend()
-    ax.set_ylabel(yTitle)
-    ax.set_xlabel(xTitle)
-    plt.xlabel(xTitle, horizontalalignment='right', x=1.0)
+        axs[0].set_yscale("log")
+    axs[0].legend()
+    axs[0].set_ylabel(yTitle)
+    axs[1].set_xlabel(xTitle)
+    axs[1].set_ylabel("Data/MC")
+    #plt.xlabel(xTitle, horizontalalignment='right', x=1.0)
     plt.ylabel(yTitle,horizontalalignment='right', y=1.0)
     
     if(yRange):
         if(yRange[1]==None):
             yRange[1] = dataMax*1.5
-        ax.set_ylim(yRange)
+        axs[0].set_ylim(yRange)
     else:
-        ax.set_ylim([0,dataMax*1.5])
+        axs[0].set_ylim([0,dataMax*1.5])
     if(xRange):
-        ax.set_xlim(xRange)
+        axs[0].set_xlim(xRange)
     lumiText = luminosity + " $fb^{-1}\ (13 TeV)$"
-    hep.cms.lumitext(text=lumiText, ax=ax, fontname=None, fontsize=None)
+    hep.cms.lumitext(text=lumiText, ax=axs[0], fontname=None, fontsize=None)
     hep.cms.text("WiP",loc=0)
     plt.legend(loc=1,ncol=3,handletextpad=0.3)#loc = 'best'
+    
+
+
+    totalMC     = [sum(x) for x in zip(*histos)]
+    dataMCRatio = [a/b for a,b in zip(histosData[0],totalMC)]
+    plt.sca(axs[1])#switch to lower pad
+    axs[1].set_ylim([0,2])
+    hep.histplot(dataMCRatio,edges[0],ax=axs[1],linewidth=1,histtype="step",edgecolor='red')
+    axs[1].axhline(y=1.0, color="grey",linestyle="--")
+
     plt.tight_layout()
-
     print("Saving {0}".format(outFile))
-
     plt.savefig(outFile)
-
+    plt.savefig(outFile.replace(".png",".pdf"))
     plt.cla()
     plt.clf()
 
@@ -509,14 +520,9 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False):
     # tags                = ["data_obs","qcd","TTbar","WJets_c","ZJets_bc"]
     # colors              = ["black","khaki","lightcoral","palegreen","blueviolet"]
 
-    if region=="F":
-        labels              = ["Data","Multijet","WJets","WJets","ZJets"]
-        tags                = ["data_obs","qcd","WJets_c","WJets_light","TotalSig"]
-        colors              = ["black","khaki","palegreen","palegreen","blueviolet"]
-    else:
-        labels              = ["Data","Multijet","WJets","ZJets"]
-        tags                = ["data_obs","qcd","WJets_c","TotalSig"]
-        colors              = ["black","khaki","palegreen","blueviolet"]
+    labels              = ["Data","Multijet","WJets","ZJets"]
+    tags                = ["data_obs","qcd","WJets_c","TotalSig"]
+    colors              = ["black","khaki","palegreen","blueviolet"]
     plotSlices          = True
 
     if(prefitTag):
@@ -532,7 +538,7 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False):
 
     #Merge sliced histograms
     for tag in tags:
-        if(tag=="qcd" and region!="F"):
+        if(tag=="qcd" and region=="CR_T"):
             tag = tag+"_"+polyOrder
         if(prefitTag):
             twoDShape = get2DPrefitPlot(postfitShapesFile,tag,dirRegion)
@@ -559,7 +565,7 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False):
             projUpEdge          = int(totalProcs.GetYaxis().GetBinUpEdge(i))
             projectionText      = "{0}".format(projLowEdge)+"<$p_{T}$<"+"{0} GeV".format(projUpEdge)
 
-            plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]","{0}/{1}_{2}_{3}.png".format(odir,outFile,region,i),xRange=[60,150],projectionText=projectionText)
+            plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]","{0}/{1}_{2}_{3}.png".format(odir,outFile,region,i),xRange=[50,150],projectionText=projectionText)
 
     projections         = []
     for j,twoDShape in enumerate(twoDShapes):
@@ -569,11 +575,254 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False):
     projections.append(totalProcs_proj)
     uncBand_proj        = getUncBand(totalProcs_proj)
 
-    plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]","{0}/{1}_{2}.png".format(odir,outFile,region),xRange=[60,150])
+    plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ [GeV]","{0}/{1}_{2}.png".format(odir,outFile,region),xRange=[50,150])
 
     tags.append("Total")
     print("Yields in {0}".format(region))
     printYields(projections[0],projections[1:],tags[1:])
+
+def plotVJets(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",proj=""):
+    histos = []
+    labels  = []
+    edges   = []
+    colors  = []
+    histosData = []#we're assuming only one data_obs dataset
+    edgesData  = []#it's still kept in array (with one element) to be similar to other processes
+    labelsData = []
+    data = sorted(data.items(), key=lambda x: x[1]["order"])#VERY HANDY, reads samples in order
+    for sample, sample_cfg in data:
+        if not(("ZJets" in sample) or ("WJets" in sample)):
+            continue
+
+        tempFile = r.TFile.Open(sample_cfg["file"])
+        if(proj=="X"):
+            h = tempFile.Get("{0}_{1}".format(sample,var)).ProjectionX()
+        elif(proj=="Y"):
+            h = tempFile.Get("{0}_{1}".format(sample,var)).ProjectionY()
+        else:
+            h = tempFile.Get("{0}_{1}".format(sample,var))
+        h.RebinX(rebinX)
+        hist, edges = hist2array(h,return_edges=True)
+        histos.append(hist)
+        edges.append(edges[0])
+        labels.append(sample_cfg["label"])
+        colors.append(sample_cfg["color"])
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+
+    hep.histplot(histos,edges[0],stack=False,ax=ax,label=labels,linewidth=3,histtype="step",color=colors)
+    if(log):
+        ax.set_yscale("log")
+    ax.legend()
+    ax.set_ylabel(yTitle)
+    ax.set_xlabel(xTitle)
+    plt.xlabel(xTitle, horizontalalignment='right', x=1.0)
+    plt.ylabel(yTitle,horizontalalignment='right', y=1.0)
+    if(yRange):
+        ax.set_ylim(yRange)
+    if(xRange):
+        ax.set_xlim(xRange)
+    lumiText = luminosity + " $fb^{-1}\ (13 TeV)$"
+    hep.cms.lumitext(text=lumiText, ax=ax, fontname=None, fontsize=None)
+    hep.cms.text("Simulation WiP",loc=0)
+    plt.legend(loc="best",ncol=2)#loc = 'best'
+    plt.tight_layout()
+
+    print("Saving {0}".format(outFile))
+
+    plt.savefig(outFile)
+
+    plt.clf()
+
+def plotLines(hList,labels,colors,xlabel,linestyles,outputFile,xRange=[],yRange=[],projectionText=""):
+    histos        = []
+    for h in hList:
+        histo,edges = hist2array(h,return_edges=True)
+        histos.append(histo)
+
+
+
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+
+    hep.histplot(histos,edges[0],stack=False,ax=ax,label = labels, histtype="step",color=colors,linewidth=3,linestyle=linestyles)
+
+    ax.legend()
+    plt.ylabel("Events/bin",horizontalalignment='right', y=1.0)
+
+    if(xRange):
+        ax.set_xlim(xRange)
+    if(yRange):
+        ax.set_ylim(yRange)
+    else:
+        yMaximum = max(map(max, histos))*1.5
+        ax.set_ylim([0.,yMaximum])
+
+    lumiText = "36.3$ fb^{-1} (13 TeV)$"    
+    hep.cms.lumitext(lumiText)
+    hep.cms.text("Simulation WiP",loc=0)
+    plt.legend(loc=1,ncol=2)
+
+    if(projectionText):
+        plt.text(0.80, 0.85, projectionText, horizontalalignment='center',verticalalignment='center',transform=ax.transAxes)
+
+    print("Saving ", outputFile)
+    plt.tight_layout()
+    plt.savefig(outputFile,bbox_inches="tight")
+
+    plt.clf()
+    plt.cla()
+
+def plotVJetsInFit(postfitShapesFile,region,odir):
+
+    labels              = ["WJets prefit","WJets postfit","ZJets prefit","ZJets postfit"]
+    tags                = ["WJets","ZJets"]
+    colors              = ["red","red","blue","blue"]
+    linestyles          = ["-","--","-","--"]
+    yRanges             = [[0,300],[0,300],[0,200],[0,70]]
+    plotSlices          = True
+
+    twoDShapes          = []
+
+    taggingCat = "CR_T"
+    dirRegion  = region
+
+    if(region=="CR_F"):
+        yRanges    = [[0,7000],[0,7000],[0,3500],[0,1000]]
+
+        #Merge sliced histograms
+    for tag in tags:
+        twoDShape = get2DPrefitPlot(postfitShapesFile,tag,dirRegion)
+        twoDShapes.append(twoDShape)
+        twoDShape = get2DPostfitPlot(postfitShapesFile,tag,dirRegion)
+        twoDShapes.append(twoDShape)
+        
+    if(plotSlices):
+        #Plot mSD
+        for i in range(1,twoDShapes[0].GetNbinsY()+1):
+            projections         = []
+            for j,twoDShape in enumerate(twoDShapes):
+                proj        = twoDShape.ProjectionX(labels[j]+"_projx_{0}".format(i),i,i)
+                projections.append(proj)
+            projLowEdge         = int(twoDShapes[0].GetYaxis().GetBinLowEdge(i))
+            projUpEdge          = int(twoDShapes[0].GetYaxis().GetBinUpEdge(i))
+            projectionText      = "{0}".format(projLowEdge)+"<$p_{T}$<"+"{0} GeV".format(projUpEdge)
+
+            plotLines(projections,labels,colors,"M_{PNet} [GeV]",linestyles,"{0}/VJets_{1}_{2}.png".format(odir,region,i),xRange=[50,150],yRange=yRanges[i-1],projectionText=projectionText)
+
+
+def SFcompPtSplit(yr,region,polyOrderPt,polyOrderIncl):
+    pt_binning  = [450,500,600,1000]
+    pt_centers  = [x1/2. + x2/2. for (x1, x2) in zip(pt_binning[:-1], pt_binning[1:])]
+    pt_err      = [x1/2. - x2/2. for (x1, x2) in zip(pt_binning[1:], pt_binning[:-1])]
+    #pt_centers  = pt_binning[:-1]/2.+pt_binning[1:]/2.
+    #pt_err      = pt_binning[1:]/2.-pt_binning[:-1]/2.
+    SF_pt       = []
+    SF_pt_dn    = []
+    SF_pt_up    = []
+
+    file_pt     = r.TFile.Open("StatAna/CMSSW_10_6_14/src/SF{0}_{1}_split/{2}_area/higgsCombineTest.MultiDimFit.mH120.root".format(yr,region,polyOrderPt))
+    resTree     = file_pt.Get("limit")
+
+    resTree.GetEntry(0)
+    SF_pt.append(resTree.SF_ZJets_bc_0)
+    SF_pt.append(resTree.SF_ZJets_bc_1)
+    SF_pt.append(resTree.SF_ZJets_bc_2)
+    resTree.GetEntry(1)
+    SF_pt_dn.append(resTree.SF_ZJets_bc_0)
+    resTree.GetEntry(2)
+    SF_pt_up.append(resTree.SF_ZJets_bc_0)
+    resTree.GetEntry(3)
+    SF_pt_dn.append(resTree.SF_ZJets_bc_1)
+    resTree.GetEntry(4)
+    SF_pt_up.append(resTree.SF_ZJets_bc_1)
+    resTree.GetEntry(5)
+    SF_pt_dn.append(resTree.SF_ZJets_bc_2)
+    resTree.GetEntry(6)
+    SF_pt_up.append(resTree.SF_ZJets_bc_2)
+    file_pt.Close()
+
+    SF_pt_up = [x1 - x2 for (x1, x2) in zip(SF_pt_up, SF_pt)]
+    SF_pt_dn = [x1 - x2 for (x1, x2) in zip(SF_pt, SF_pt_dn)]
+
+    file_incl   = "StatAna/CMSSW_10_6_14/src/SF{0}_{1}/{2}_area/higgsCombineTest.MultiDimFit.mH120.root".format(yr,region,polyOrderIncl)
+    file_incl   = r.TFile.Open(file_incl)
+    resTree     = file_incl.Get("limit")
+    resTree.GetEntry(0)
+    SF_incl     = resTree.SF_ZJets_bc
+    resTree.GetEntry(1)
+    SF_incl_dn  = SF_incl-resTree.SF_ZJets_bc
+    resTree.GetEntry(2)
+    SF_incl_up  = resTree.SF_ZJets_bc-SF_incl  
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+
+    plt.sca(ax)
+    plt.errorbar(pt_centers, SF_pt, yerr=[SF_pt_dn,SF_pt_up],xerr=pt_err,fmt='ro',label="pT dependent SF")
+    plt.errorbar([pt_binning[0]/2.+pt_binning[-1]/2.], SF_incl, yerr=[[SF_incl_dn],[SF_incl_up]],xerr=[pt_binning[-1]/2.-pt_binning[0]/2.],fmt='bo',label="pT inclusive SF")
+
+    ax.set_ylim(0.0,2.0)
+
+    plt.ylabel("Scale factor",horizontalalignment='right', y=1.0)
+    plt.xlabel("$p_{T} [GeV]$",horizontalalignment='right', x=1.0)
+    #ax.xaxis.set_tick_params(which='minor', top=False,bottom=False)    
+    plt.axhline(y=1.0, color='gray', linestyle='--')
+    plt.legend(title="20{0} {1} region".format(yr,region),loc=0)
+
+    hep.cms.lumitext("(13 TeV)")
+    hep.cms.text("Work in progress",loc=0)
+
+
+    print("results/plots/SF_{0}_{1}.pdf".format(region,yr))
+    plt.tight_layout()
+    plt.savefig("results/plots/SF_{0}_{1}.pdf".format(region,yr),bbox_inches="tight")
+    plt.savefig("results/plots/SF_{0}_{1}.png".format(region,yr),bbox_inches="tight")
+
+    plt.clf()
+    plt.cla()
+
+def SFcompYears():
+    #SF comp 2016
+    SF_T     = [0.80,0.90,1.12,1.02]
+    errsUp_T = [0.16,0.17,0.14,0.12]
+    errsDn_T = [0.15,0.18,0.13,0.11]
+
+    SF_L     = [0.87,0.95,1.12,1.14]
+    errsUp_L = [0.19,0.20,0.17,0.16]
+    errsDn_L = [0.19,0.18,0.15,0.12]
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+
+    plt.sca(ax)
+    plt.errorbar([2014.9,2015.9,2016.9,2017.9], SF_T, yerr=[errsDn_T,errsUp_T],fmt='ro',label="Tight WP (0.98)")
+    plt.errorbar([2015.1,2016.1,2017.1,2018.1], SF_L, yerr=[errsDn_L,errsUp_L],fmt='bo',label="Loose WP (0.94)")
+
+
+    plt.ylabel("Scale factor",horizontalalignment='right', y=1.0)
+    plt.xlabel("",horizontalalignment='right', x=1.0)
+    xLabels=["2016APV","2016","2017","2018"]
+    xTicks=[2015,2016,2017,2018]
+    ax.set_xticks(xTicks)
+    ax.set_xticklabels(xLabels)
+    ax.set_xlim(2014,2019)
+    ax.set_ylim(0.5,1.6)
+    ax.xaxis.set_tick_params(which='minor', top=False,bottom=False)    
+    plt.axhline(y=1.0, color='gray', linestyle='--')
+    plt.legend(ncol=2)
+
+    hep.cms.lumitext("(13 TeV)")
+    hep.cms.text("Work in progress",loc=0)
+
+    print("Saving SF.pdf")
+    plt.tight_layout()
+    plt.savefig("results/plots/SF.pdf",bbox_inches="tight")
+
+    plt.clf()
+    plt.cla()
 
 def printMCYields(data,region,year):
     data = sorted(data.items(), key=lambda x: x[1]["order"])
@@ -581,29 +830,221 @@ def printMCYields(data,region,year):
     print("Yields in {0} - {1}".format(year,region))
     for sample, sample_cfg in data:
         f       = r.TFile.Open(sample_cfg["file"])
-        hist    = f.Get("{0}_m_pT_{1}__nominal".format(sample,region))
+        hist    = f.Get("{0}_H_m_pT_{1}__nominal".format(sample,region))
         print("{0:10}\t{1:.0f}".format(sample,hist.Integral()))
+
+def getSF(workingArea,polyOrder,cmsswArea,branch="SF_ZJets_bc",idx=0):
+    #branch is the name of the SF as saved in the multidimfit
+    #idx is the event at which the best-fit value of that SF is saved (before sf -/+ unc.)
+    fitDir  = "{0}/{1}/{2}_area".format(cmsswArea,workingArea,polyOrder)
+    fitFile = r.TFile.Open("{0}/higgsCombineTest.MultiDimFit.mH120.root".format(fitDir))
+    ttree   = fitFile.Get("limit")
+    ttree.GetEvent(idx)
+    sf      = getattr(ttree,branch)
+    ttree.GetEvent(idx+1)
+    errDn   = sf-getattr(ttree,branch)
+    ttree.GetEvent(idx+2)
+    errUp   = getattr(ttree,branch)-sf
+    return sf,errDn,errUp
+
+def plotSFs(workingAreas,bestOrders,cmsswArea):
+    sfs     = {}
+    errsDn  = {}
+    errsUp  = {}
+    for workingArea in workingAreas:
+        polyOrder       = bestOrders[workingArea]
+        sf,errDn,errUp  = getSF(workingArea,polyOrder,cmsswArea)
+        wp=workingArea.split("_")[-1]
+        if not wp in sfs:
+            sfs[wp]     = []
+            errsDn[wp]  = []
+            errsUp[wp]  = []
+        sfs[wp].append(sf)
+        errsDn[wp].append(errDn)
+        errsUp[wp].append(errUp)
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+
+    plt.sca(ax)
+    fmts = ['ro','bv','m^']
+    for i,wp in enumerate(sfs):
+        plt.errorbar([2014.9+0.1*i,2015.9+0.1*i,2016.9+0.1*i,2017.9+0.1*i], sfs[wp], yerr=[errsDn[wp],errsUp[wp]],fmt=fmts[i],label="{0} WP".format(wp.title()))
+
+
+    plt.ylabel("Scale factor",horizontalalignment='right', y=1.0)
+    plt.xlabel("",horizontalalignment='right', x=1.0)
+    xLabels=["2016APV","2016","2017","2018"]
+    xTicks=[2015,2016,2017,2018]
+    ax.set_xticks(xTicks)
+    ax.set_xticklabels(xLabels)
+    ax.set_xlim(2014,2019)
+    ax.set_ylim(0.,2.0)
+    ax.xaxis.set_tick_params(which='minor', top=False,bottom=False)    
+    plt.axhline(y=1.0, color='gray', linestyle='--')
+    plt.legend(ncol=2)
+
+    hep.cms.lumitext("(13 TeV)")
+    hep.cms.text("Work in progress",loc=0)
+
+    print("Saving SF.pdf")
+    plt.savefig("results/plots/SF.pdf",bbox_inches="tight")
+    plt.savefig("results/plots/SF.png",bbox_inches="tight")
+
+    plt.clf()
+    plt.cla()
+
+def plotSFsSplit(bestOrders,cmsswArea,outfile="test.png"):
+    nPtBins     = 3
+    ptBinIdx    = [1,2,3]
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+    plt.sca(ax)
+
+    fmts    = ["go","r+","bs"]
+    labels  = ["Loose Wp","Medium Wp","Tight Wp"] 
+
+    for wpIdx,item in enumerate(sorted(bestOrders.items())):
+        workingArea = item[0]
+        polyOrder   = item[1]
+        #polyOrder   = bestOrders[workingArea]
+        sfs         = []
+        errsDn      = []
+        errsUp      = []
+        for i in range(nPtBins):
+            sf,errDn,errUp  = getSF(workingArea,polyOrder,cmsswArea,branch="SF_ZJets_bc_{0}".format(i),idx=2*i)
+            sfs.append(sf)
+            errsDn.append(errDn)
+            errsUp.append(errUp)
+        ptCoord = [idx+wpIdx*0.05 for idx in ptBinIdx]#slight offset each wp
+
+        plt.errorbar(ptCoord, sfs,yerr=[errsDn,errsUp],label=labels[wpIdx],fmt=fmts[wpIdx])
+
+
+    plt.ylabel("Scale factor",horizontalalignment='right', y=1.0)
+    plt.xlabel("$p_T$ [GeV]",horizontalalignment='right', x=1.0)
+    plt.xticks(ptBinIdx, ['[450,500)', '[500,600)', '[600+]'])
+
+    ax.set_xlim(0,4)
+    ax.set_ylim(0.,2.0)
+    ax.xaxis.set_tick_params(which='minor', top=False,bottom=False)    
+    plt.axhline(y=1.0, color='gray', linestyle='--')
+    plt.legend(ncol=2)
+
+    hep.cms.lumitext("(13 TeV)")
+    hep.cms.text("Work in progress",loc=0)
+
+    print("Saving {0}".format(outFile))
+    plt.savefig(outFile,bbox_inches="tight")
+    plt.savefig(outFile.replace(".png",".pdf"),bbox_inches="tight")
+
+    plt.clf()
+    plt.cla()
+
+def writeSFTable(bestOrders,cmsswArea):
+    nPtBins = 3
+    #wps     = ["tight","medium","loose"]
+    #wps     = ["tight","medium"]
+    wps     = ["tight"]
+    years   = ["16APV","16","17","18"]
+    for year in years:
+        print("\\multicolumn{{4}}{{c}}{{{0}{1}}}\\\\ \\hline".format("20",year))
+        for wp in wps:
+            line = "{0}".format(wp.capitalize())
+            workingArea = "{0}_{1}_split".format(year,wp)
+            polyOrder   = bestOrders[workingArea]
+            for ptBin in range(1,nPtBins+1):
+                sf,errDn,errUp  = getSF(workingArea,polyOrder,cmsswArea,branch="SF_ZJets_bc_{0}".format(ptBin-1),idx=2*(ptBin-1))
+                line+=" & ${0:.2f}^{{+{1:.2f}}}_{{-{2:.2f}}}$".format(sf,errUp,errDn)
+            line+="\\\\"
+            print(line)
+        print("\\hline")
+
 
 if __name__ == '__main__':
 
-    #Postfit T
-    cmsswArea       = "/users/mrogul/Work/Hgamma/CMSSW_10_6_14/src/"
-    bestOrders      = {"tight_medium_CR":"2"}
-    workingAreas    = ["tight_medium_CR"]
-    for workingArea in workingAreas:
-        polyOrder       = bestOrders[workingArea]
-        baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
-        fitFile         = baseDir+"postfitshapes_s.root"
-        Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
 
-    plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder))
-    plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder))
-    plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder))
+    for year in ["2016","2016APV","2017","2018","RunII"]:
+        odir = "results/plots_CR/tight/{0}/".format(year)
+        Path(odir).mkdir(parents=True, exist_ok=True)
+        
+        if(year=="2016APV"):
+            luminosity="19.5"
+        elif(year=="2016"):
+            luminosity="16.8"
+        elif(year=="2017"):
+            luminosity="41.5"
+        elif(year=="2018"):
+            luminosity="59.8"
+        elif(year=="RunII"):
+            luminosity="138"
 
-        # try:
-        #     plotPostfit(fitFile,"pass","results/plots/{0}/{1}/".format(workingArea,polyOrder))
-        #     plotPostfit(fitFile,"fail","results/plots/{0}/{1}/".format(workingArea,polyOrder))
-        #     #plotRPF(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder)
-        #     #plotRPFSurf(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder,zmax=5.)
-        # except:
-        #     print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
+        with open("plotConfigs/{0}_tight_CR.json".format(year)) as json_file:
+            data = json.load(json_file)
+
+            printMCYields(data,"CR_T",year)
+            printMCYields(data,"CR_F",year)
+
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_pass_data.pdf".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_lin_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,10**6],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_pass_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[1,10**6],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_fail_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[100,10**8],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_fail_data.pdf".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[100,10**8],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/pT_pass_data.png".format(odir),xTitle="$p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[1,10**7],log=True,xRange=[450,2000],rebinX=1,luminosity=luminosity,proj="Y",tagger=tagger)
+            plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/pT_fail_data.png".format(odir),xTitle="$p_{T}$ [GeV]",yTitle="Events / 50 GeV",yRange=[100,10**9],log=True,xRange=[450,2000],rebinX=1,luminosity=luminosity,proj="Y",tagger=tagger)
+
+
+            f = r.TFile.Open(data["data_obs"]["file"])#"JetHT16.root")
+            print(data["data_obs"]["file"])
+            hTotal = f.Get("data_obs_pT0noTriggers_nom")
+            hPass  = f.Get("data_obs_pT0triggersAll_nom")
+            eff = r.TEfficiency(hPass,hTotal)
+            eff.SetName("trig_eff")
+            #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
+            # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
+            # g.cd()
+            # eff.Write()
+            # g.Close()
+
+            plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year))
+
+            hTotal = f.Get("data_obs_noTriggers_nom").ProjectionX()
+            hPass  = f.Get("data_obs_triggersAll_nom").ProjectionX()
+            hPass.RebinX(5)
+            hTotal.RebinX(5)
+            plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_M_{1}.pdf".format(odir,year),xlabel="$M_{PNet}$ [GeV]",ylabel="Trigger efficiency")
+
+
+        with open("plotConfigs/Vjets{0}.json".format(year)) as json_file:
+            data = json.load(json_file)
+            plotVJets(data,"VpT_CR_F_nom","{0}/vpT_fail_lin.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=False,xRange=[0,1500],yRange=[1.,5500],rebinX=1,luminosity=luminosity)
+            plotVJets(data,"VpT_CR_T_nom","{0}/vpT_pass_lin.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=False,xRange=[0,1500],yRange=[1.,300],rebinX=1,luminosity=luminosity)
+            plotVJets(data,"VpT_CR_F_nom","{0}/vpT_fail.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=True,xRange=[0,1500],yRange=[1.,10**5],rebinX=1,luminosity=luminosity)
+            plotVJets(data,"VpT_CR_T_nom","{0}/vpT_pass.png".format(odir),xTitle="$Gen V p_{T}$ [GeV]",yTitle="Events / 10 GeV",log=True,xRange=[0,1500],yRange=[1.,10**3],rebinX=1,luminosity=luminosity)
+
+
+            plotVJets(data,"H_m_pT_CR_F__nominal","{0}/mVJets_fail_lin.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / 5 GeV",log=False,xRange=[40,150],yRange=[0,5*10**4],rebinX=1,luminosity=luminosity,proj="X")
+            plotVJets(data,"H_m_pT_CR_T__nominal","{0}/mVJets_pass_lin.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / 5 GeV",log=False,xRange=[40,150],yRange=[0,1200],rebinX=1,luminosity=luminosity,proj="X")
+
+    # #Postfit T
+    # tagger          = "Hbb"
+    # cmsswArea       = "StatAna/CMSSW_10_6_14/src/{0}/".format(tagger)
+    # #bestOrders      = {"16APV_tight_split":"2","16_tight_split":"2","17_tight_split":"2","18_tight_split":"2"} #PNet
+    # #bestOrders      = {"16APV_tight_split":"2","16_tight_split":"2","17_tight_split":"2","18_tight_split":"4"} #DeepDoubleX
+    # bestOrders      = {"16APV_tight_split":"3","16_tight_split":"3","17_tight_split":"3","18_tight_split":"3"} #Hbb
+    # #workingAreas    = ["16APV_tight_split","16_tight_split","17_tight_split","18_tight_split"]
+    # workingAreas    = ["16APV_tight_split"]
+    # for workingArea in workingAreas:
+    #     polyOrder       = bestOrders[workingArea]
+    #     baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
+    #     fitFile         = baseDir+"postfitshapes_s.root"
+    #     Path("results/plots/{2}/{0}/{1}/".format(workingArea,polyOrder,tagger)).mkdir(parents=True, exist_ok=True)
+
+    #     try:
+    #         plotPostfit(fitFile,"pass","results/plots/{2}/{0}/{1}/".format(workingArea,polyOrder,tagger))
+    #         plotPostfit(fitFile,"fail","results/plots/{2}/{0}/{1}/".format(workingArea,polyOrder,tagger))
+    #         plotRPF(fitFile,"results/plots/{2}/{0}/{1}/".format(workingArea,polyOrder,tagger),polyOrder)
+    #         plotRPFSurf(fitFile,"results/plots/{2}/{0}/{1}/".format(workingArea,polyOrder,tagger),polyOrder,zmax=5.)
+    #     except:
+    #         print("Couldn't plot for {0} {1} {2}".format(workingArea,polyOrder,tagger))

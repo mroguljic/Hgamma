@@ -22,18 +22,23 @@ if("2018/" in iDir):
     year="2018"
 
 
-variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","pnetUp","pnetDown"]
+variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","pnetUp","pnetDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
 for variation in variations:
     if(variation!="nom"):
-        if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample or "WJets" in sample or "ZJets" in sample):
+        if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample or "WJets" in sample or "ZJets" in sample or "ggFHbb" in sample):
             #Running variations only on some processes
             continue
-        if(("pnet" in variation) and not ("ZGamma" in sample or "Hgamma" in sample or "ZJets" in sample)):
+        if(("pnet" in variation) and not ("ZGamma" in sample or "Hgamma" in sample or "ZJets" in sample or "ggFHbb" in sample)):
             #Xbb SF variation only on processes with X->bb
             continue
 
+    if("photon" in variation and "_CR" in outputFile):
+        #Don't run photon variations in no-photon CR
+        continue
+
     inputTag = variation
     if "pnet" in variation:
+        #Pnet variation uses the nominal tree
         inputTag = "nom"
 
     inputFile = "{0}/{1}_{2}.root".format(iDir,sample,inputTag)
