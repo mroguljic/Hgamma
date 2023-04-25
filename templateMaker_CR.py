@@ -122,7 +122,7 @@ if not variation in iFile:
             iFile = iFile.replace(".root","_nom.root")
 
 
-if "nom" in iFile:
+if variation=="nom":
     #Nominal tree processing will run all variations which do not require separate selection
     nomTreeFlag = True
 else:
