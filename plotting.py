@@ -20,8 +20,53 @@ matplotlib.use('Agg')
 r.gROOT.SetBatch(True)
 r.gStyle.SetOptFit(111)
 
-def plotRPF(postfitShapesFile,odir,polyOrder,passTag="M",failTag="F"):
-    hPass = get2DPostfitPlot(postfitShapesFile,"qcd_{0}".format(polyOrder),passTag)
+def plotDeltaNLL(baseDir,odir,outFile,xRange=[0.,20.0],yRange=[0.,15.],signalFactor=10.,extraText="HZy coupling"):
+    f       = r.TFile.Open(baseDir+"/higgsCombineTest.MultiDimFit.mH125.root")
+    ttree   = f.Get("limit")
+    rs      = []
+    dNLL    = []
+
+    for event in ttree:
+        rs.append(event.r*signalFactor)
+        dNLL.append(event.deltaNLL*2)
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+    plt.plot(rs,dNLL,'ro-')
+
+    hep.cms.text("WiP",loc=0)
+    lumiText = "138 $fb^{-1} (13 TeV)$"    
+    hep.cms.lumitext(lumiText)
+    ax.set_xlim(xRange)
+    ax.set_ylim(yRange)
+
+    plt.xlabel(r"$\sigma (pp\rightarrow H\gamma \rightarrow bb\gamma )$ [fb]",horizontalalignment='right', x=1.0)
+    plt.ylabel("2$\Delta$ NLL",horizontalalignment='right', y=1.0)
+    ax.yaxis.set_tick_params(which='minor', left=False)    
+    ax.yaxis.set_tick_params(which='minor', right=False)    
+
+
+    ax.axhline(y=1.0, color="grey",linestyle="--")
+    ax.axhline(y=4.0, color="grey",linestyle="--")
+    ax.axhline(y=9.0, color="grey",linestyle="--")
+
+    plt.text(1.0,1.2,"1$\sigma$",color="grey")
+    plt.text(1.0,4.2,"2$\sigma$",color="grey")
+    plt.text(1.0,9.2,"3$\sigma$",color="grey")
+    plt.text(1.0,14,extraText,color="black")
+
+    plt.savefig("test.png", bbox_inches='tight')
+
+    print("Saving "+odir+"{0}.pdf".format(outFile))
+    plt.savefig(odir+"/{0}.pdf".format(outFile), bbox_inches='tight')
+    plt.savefig(odir+"/{0}.png".format(outFile), bbox_inches='tight')
+    plt.cla()
+    plt.clf()
+
+
+
+def plotRPF(postfitShapesFile,odir,qcdTag,passTag="M",failTag="F",xRange=[60,200],yTitle="$R_{M/F}$"):
+    hPass = get2DPostfitPlot(postfitShapesFile,qcdTag,passTag)
     hFail = get2DPostfitPlot(postfitShapesFile,"qcd",failTag)
 
     hPass = hPass.ProjectionX("hPass_temp")
@@ -42,11 +87,11 @@ def plotRPF(postfitShapesFile,odir,polyOrder,passTag="M",failTag="F"):
 
     hep.cms.text("Work in progress",loc=0)
     
-    ax.set_xlim([60,200])
+    ax.set_xlim(xRange)
     ax.set_ylim([0.,maxRpf*1.3])
 
     plt.xlabel("$M_{PNet}$ [GeV]",horizontalalignment='right', x=1.0)
-    plt.ylabel("$R_{{{0}/{1}}}$".format(passTag,failTag)+" x $10^{3}$",horizontalalignment='right', y=1.0)
+    plt.ylabel(yTitle+" x $10^{3}$",horizontalalignment='right', y=1.0)
     #ax.yaxis.set_tick_params(which='minor', left=False)    
     #ax.yaxis.set_tick_params(which='minor', right=False)    
 
@@ -614,7 +659,11 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
     twoDShapes  = []
 
     dirRegion   = region
-    polyOrder   = odir.split("/")[-2]
+    if CRFlag:
+        polyOrder = odir.split("/")[-2].split("CR")[0][-1]
+    else:
+        polyOrder = odir.split("/")[-2].split("SR")[0][-1]
+    #polyOrder   = odir.split("/")[-2]
 
     #Merge sliced histograms
     for tag in tags:
@@ -824,29 +873,40 @@ if __name__ == '__main__':
 
     #Postfit
     cmsswArea       = "../CMSSW_10_6_14/src/"
-    polyOrder       = "4"
-    workingAreas    = ["SR_CR"]
-    signal          ="Hgamma_HZy"
+    polyOrders      = ["1","1"]
+    #polyOrders      = ["2","2"]
+    #polyOrders      = ["3","3"]
+    workingAreas    = ["SR_CR_Hyy","SR_CR_HZy"]
+
 
 
     for workingArea in workingAreas:
-        baseDir         = cmsswArea + workingArea + "/" + polyOrder + "_area/"
+        if("HZy" in workingArea):
+            signal      = "Hgamma_HZy"
+            coupling    = "HZy coupling"
+        else:
+            signal      = "Hgamma_Hyy"
+            coupling    = "Hyy coupling"
+            
+        baseDir         = cmsswArea + workingArea + "/{0}SR_{1}CR_area/".format(polyOrders[0],polyOrders[1])
         fitFile         = baseDir+"postfitshapes_b.root"
-        Path("results/plots/{0}/{1}/".format(workingArea,polyOrder)).mkdir(parents=True, exist_ok=True)
-        plotRPF(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder)
-        plotRPF(fitFile,"results/plots/{0}/{1}/".format(workingArea,polyOrder),polyOrder,passTag="T")
+        Path("results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1])).mkdir(parents=True, exist_ok=True)
+        plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_{0}".format(polyOrders[0]),yTitle="$R_{M/F}$")
+        plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_{0}".format(polyOrders[0]),passTag="T",yTitle="$R_{T/F}$")
+        plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_CR_{0}".format(polyOrders[1]),passTag="CR_T",failTag="CR_F",xRange=[60,150],yTitle="$R_{T/F}^{0\gamma}$")
+        plotDeltaNLL(baseDir,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"DeltaNLL",extraText=coupling)
 
         try:
-            plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"M","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"F","results/plots/{0}/{1}/".format(workingArea,polyOrder),blind=False,binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True,signal=signal,plotSlices=True)
-            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}/".format(workingArea,polyOrder),binWidthDivision=False,signal=signal)
+            plotPostfit(fitFile,"T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
+            plotPostfit(fitFile,"M","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
+            plotPostfit(fitFile,"F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),blind=False,binWidthDivision=False,signal=signal)
+            plotPostfit(fitFile,"T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
+            plotPostfit(fitFile,"M","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
+            plotPostfit(fitFile,"F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),blind=False,binWidthDivision=True,signal=signal)
+            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal,plotSlices=False)
+            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
+            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
+            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
 
         except:
            print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))
