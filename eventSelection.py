@@ -84,18 +84,33 @@ def eventSelection(options):
         print("Running on MC")
     nProc = a.genEventSumw
 
+
+    import correctionlib
+    correctionlib.register_pyroot_binding() 
     CompileCpp("TIMBER/Framework/Hgamma_modules/Hgamma_Functions.cc") 
     CompileCpp("TIMBER/Framework/Zbb_modules/Zbb_Functions.cc") 
     CompileCpp("TIMBER/Framework/Zbb_modules/helperFunctions.cc") 
 
+    # if(options.year=="2016APV"):
+    #    deepCsvM    = 0.6001
+    # elif(options.year=="2016"):
+    #    deepCsvM    = 0.5847
+    # elif(options.year=="2017"):
+    #    deepCsvM    = 0.4506
+    # elif(options.year=="2018"):
+    #    deepCsvM    = 0.4168 
+    # else:
+    #     print("Year not supported")
+    #     sys.exit()
+
     if(options.year=="2016APV"):
-       deepCsvM    = 0.6001
+       deepJetM    = 0.2598
     elif(options.year=="2016"):
-       deepCsvM    = 0.5847
+       deepJetM    = 0.2489
     elif(options.year=="2017"):
-       deepCsvM    = 0.4506
+       deepJetM    = 0.3040
     elif(options.year=="2018"):
-       deepCsvM    = 0.4168 
+       deepJetM    = 0.2783
     else:
         print("Year not supported")
         sys.exit()
@@ -114,15 +129,6 @@ def eventSelection(options):
     MetFiltersString = a.GetFlagString(MetFilters)
     if MetFiltersString:#RDF crashes if METstring is empty
         a.Cut("MET_Filters",MetFiltersString)
-    #------------------------------#
-    
-    #b-tag reshaping
-    if(options.variation == "sfDown"):
-        sfVar = 1
-    elif(options.variation=="sfUp"):
-        sfVar = 2
-    else:
-        sfVar = 0 
 
     #----------Triggers------------#
     beforeTrigCheckpoint    = a.GetActiveNode()
@@ -178,22 +184,14 @@ def eventSelection(options):
     evtColumns.Add("nMu","nMuons(nMuon,Muon_looseId,Muon_pfIsoId,0,Muon_pt,20,Muon_eta)")
     #1=PFIsoVeryLoose, 2=PFIsoLoose, 3=PFIsoMedium, 4=PFIsoTight, 5=PFIsoVeryTight, 6=PFIsoVeryVeryTight
 
-    if(isData):
-        evtColumns.Add("btagDisc",'Jet_btagDeepB') 
-    else:
-        CompileCpp('TIMBER/Framework/Zbb_modules/AK4Btag_SF.cc')
-        print('AK4Btag_SF ak4SF = AK4Btag_SF("{0}", "DeepCSV", "reshaping");'.format(options.year))
-        CompileCpp('AK4Btag_SF ak4SF = AK4Btag_SF("{0}", "DeepCSV", "reshaping");'.format(options.year))
-        evtColumns.Add("btagDisc",'ak4SF.evalCollection(nJet,Jet_pt, Jet_eta, Jet_hadronFlavour,Jet_btagDeepB,{0})'.format(sfVar)) 
-    evtColumns.Add("topVetoFlag","topVeto(Higgs_eta,Higgs_phi,nJet,Jet_eta,{0},Jet_phi,Jet_pt,btagDisc,{1})".format(2.4,deepCsvM))
+
+    evtColumns.Add("topVetoFlag","topVeto(Higgs_eta,Higgs_phi,nJet,Jet_eta,{0},Jet_phi,Jet_pt,Jet_btagDeepFlavB,{1})".format(2.4,deepJetM))
 
 
     a.Apply([evtColumns])
 
     #Apply photon energy scale/resolution unc. scale factors
     if("photonEs" in options.variation):
-        import correctionlib
-        correctionlib.register_pyroot_binding()
         if(year=="2016APV"):
             yearAlt = "2016preVFP"
         elif(year=="2016"):
@@ -228,9 +226,36 @@ def eventSelection(options):
     a.Cut("LeptonVeto","nMu==0 && nEle==0")
     nLeptonVeto = getNweighted(a,isData)
 
+    if not isData:
+        #Get AK4 btag efficiency, needed for 
+        a.Define("Jet_counts","taggedJetCount(Higgs_eta,Higgs_phi,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_btagDeepFlavB,{0},Jet_hadronFlavour)".format(deepJetM))
+        a.Define("light_pass","Jet_counts[0]")
+        a.Define("c_pass","Jet_counts[1]")
+        a.Define("b_pass","Jet_counts[2]")
+        a.Define("light_tot","Jet_counts[3]")
+        a.Define("c_tot","Jet_counts[4]")
+        a.Define("b_tot","Jet_counts[5]")
+
+        eff_light = a.DataFrame.Sum("light_pass").GetValue()/a.DataFrame.Sum("light_tot").GetValue()
+        eff_c = a.DataFrame.Sum("c_pass").GetValue()/a.DataFrame.Sum("c_tot").GetValue()
+        eff_b = a.DataFrame.Sum("b_pass").GetValue()/a.DataFrame.Sum("b_tot").GetValue()
+        print("Efficiencies l/c/b: {0:.3f} {1:.3f} {2:.3f}".format(eff_light,eff_c,eff_b))
+
 
     a.Cut("topVeto","topVetoFlag==0")
     nTopVeto = getNweighted(a,isData)
+
+    if not isData:
+        #Calculate AK4 btag SF weights
+        btvjson = correctionlib.CorrectionSet.from_file("btagging.json.gz")
+        ROOT.gInterpreter.Declare('correction::Correction::Ref correction_bc = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_comb");'.format(year))
+        ROOT.gInterpreter.Declare('correction::Correction::Ref correction_light = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_incl");'.format(year))
+        a.Define("btagSF","calcBtagWeight(correction_light,correction_bc,Higgs_eta,Higgs_phi,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_hadronFlavour,{0},{1},{2})".format(eff_light,eff_c,eff_b))
+        a.Define("btagSF__nom","btagSF[0]")
+        a.Define("btagSF__down","btagSF[1]")
+        a.Define("btagSF__up","btagSF[2]")
+
+        print("Average AK4 bTag weights nom/dn/up: {0:.3f} {1:.3f} {2:.3f}".format(a.DataFrame.Mean("btagSF__nom").GetValue(),a.DataFrame.Mean("btagSF__down").GetValue(),a.DataFrame.Mean("btagSF__up").GetValue()))
 
     a.Define("pnetHiggs","FatJet_particleNetMD_Xbb[Hidx]/(FatJet_particleNetMD_Xbb[Hidx]+FatJet_particleNetMD_QCD[Hidx])")
 
@@ -273,7 +298,7 @@ def eventSelection(options):
     outputFile      = options.output.replace(".root","_{0}.root".format(options.variation))
 
     if not isData:
-        snapshotColumns.extend(['Pileup__nom','Pileup__up','Pileup__down','Pdfweight__up','Pdfweight__down','Pileup_nTrueInt','genWeight'])
+        snapshotColumns.extend(['Pileup__nom','Pileup__up','Pileup__down','Pdfweight__up','Pdfweight__down','Pileup_nTrueInt','genWeight','btagSF__nom','btagSF__down','btagSF__up'])
         a.Define("ISR__up","PSWeight[2]")
         a.Define("ISR__down","PSWeight[0]")
         a.Define("FSR__up","PSWeight[3]")
@@ -296,7 +321,7 @@ def eventSelection(options):
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)
 
     cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,nID,npT,nJetMass,nLeptonVeto,nTopVeto]
-    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","Lepton Veto","Top Veto","pass","fail"]#tagging bins will be filled out in template making
+    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","Lepton Veto","Top Veto","tight","medium","fail"]#tagging bins will be filled out in template making
     nCutFlowlabels      = len(cutFlowLabels)
     hCutFlow            = ROOT.TH1F('{0}_cutflow'.format(options.process),"Number of events after each cut",nCutFlowlabels,0.5,nCutFlowlabels+0.5)
     for i,label in enumerate(cutFlowLabels):

@@ -95,14 +95,26 @@ def eventSelection(options):
 
     histos          = []
 
+    # if(options.year=="2016APV"):
+    #    deepCsvM    = 0.6001
+    # elif(options.year=="2016"):
+    #    deepCsvM    = 0.5847
+    # elif(options.year=="2017"):
+    #    deepCsvM    = 0.4506
+    # elif(options.year=="2018"):
+    #    deepCsvM    = 0.4168 
+    # else:
+    #     print("Year not supported")
+    #     sys.exit()
+
     if(options.year=="2016APV"):
-       deepCsvM    = 0.6001
+       deepJetM    = 0.2598
     elif(options.year=="2016"):
-       deepCsvM    = 0.5847
+       deepJetM    = 0.2489
     elif(options.year=="2017"):
-       deepCsvM    = 0.4506
+       deepJetM    = 0.3040
     elif(options.year=="2018"):
-       deepCsvM    = 0.4168 
+       deepJetM    = 0.2783
     else:
         print("Year not supported")
         sys.exit()
@@ -111,9 +123,9 @@ def eventSelection(options):
 
     #-------AK4 b-tag SF-----------#
     if not isData:
-        CompileCpp('TIMBER/Framework/Zbb_modules/AK4Btag_SF.cc')
-        print('AK4Btag_SF ak4SF = AK4Btag_SF("{0}", "DeepCSV", "reshaping");'.format(options.year))
-        CompileCpp('AK4Btag_SF ak4SF = AK4Btag_SF("{0}", "DeepCSV", "reshaping");'.format(options.year))
+        import correctionlib
+        correctionlib.register_pyroot_binding() 
+        CompileCpp("TIMBER/Framework/Hgamma_modules/Hgamma_Functions.cc") 
     #------------------------------#
 
     nSkimmed = getNweighted(a,isData)
@@ -194,25 +206,10 @@ def eventSelection(options):
         evtColumns.Add("JetPnetMass",'FatJet_mpnet_corr[0]*0.98')
     else:
         evtColumns.Add("JetSDMass",'FatJet_msoftdrop_corr[0]')
-        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[0]')
+        evtColumns.Add("JetPnetMass",'FatJet_mpnet_corr[0]')
 
 
-    evtColumns.Add("JetSDMass",'FatJet_msoftdrop_corr[0]')
-    evtColumns.Add("JetPnetMass",'FatJet_mpnet_corr[0]')
-
-    #b-tag reshaping
-    if(options.variation == "sfDown"):
-        sfVar = 1
-    elif(options.variation=="sfUp"):
-        sfVar = 2
-    else:
-        sfVar = 0 
-
-    if(isData):
-        evtColumns.Add("btagDisc",'Jet_btagDeepB') 
-    else:
-        evtColumns.Add("btagDisc",'ak4SF.evalCollection(nJet,Jet_pt, Jet_eta, Jet_hadronFlavour,Jet_btagDeepB,{0})'.format(sfVar)) 
-    evtColumns.Add("topVetoFlag","topVeto(FatJet_eta0,FatJet_phi0,nJet,Jet_eta,{0},Jet_phi,Jet_pt,btagDisc,{1})".format(2.4,deepCsvM))
+    evtColumns.Add("topVetoFlag","topVeto(FatJet_eta0,FatJet_phi0,nJet,Jet_eta,{0},Jet_phi,Jet_pt,Jet_btagDeepFlavB,{1})".format(2.4,deepJetM))
 
     a.Apply([evtColumns])
 
@@ -234,8 +231,35 @@ def eventSelection(options):
     nLeptonVeto = getNweighted(a,isData)
 
 
+    if not isData:
+        #Get AK4 btag efficiency, needed for SF
+        a.Define("Jet_counts","taggedJetCount(FatJet_eta0,FatJet_phi0,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_btagDeepFlavB,{0},Jet_hadronFlavour)".format(deepJetM))
+        a.Define("light_pass","Jet_counts[0]")
+        a.Define("c_pass","Jet_counts[1]")
+        a.Define("b_pass","Jet_counts[2]")
+        a.Define("light_tot","Jet_counts[3]")
+        a.Define("c_tot","Jet_counts[4]")
+        a.Define("b_tot","Jet_counts[5]")
+
+        eff_light = a.DataFrame.Sum("light_pass").GetValue()/a.DataFrame.Sum("light_tot").GetValue()
+        eff_c = a.DataFrame.Sum("c_pass").GetValue()/a.DataFrame.Sum("c_tot").GetValue()
+        eff_b = a.DataFrame.Sum("b_pass").GetValue()/a.DataFrame.Sum("b_tot").GetValue()
+        print("Efficiencies l/c/b: {0:.3f} {1:.3f} {2:.3f}".format(eff_light,eff_c,eff_b))
+
     a.Cut("topVeto","topVetoFlag==0")
     nTopVeto = getNweighted(a,isData)
+
+    if not isData:
+        #Calculate AK4 btag SF weights
+        btvjson = correctionlib.CorrectionSet.from_file("btagging.json.gz")
+        ROOT.gInterpreter.Declare('correction::Correction::Ref correction_bc = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_comb");'.format(year))
+        ROOT.gInterpreter.Declare('correction::Correction::Ref correction_light = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_incl");'.format(year))
+        a.Define("btagSF","calcBtagWeight(correction_light,correction_bc,FatJet_eta0,FatJet_phi0,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_hadronFlavour,{0},{1},{2})".format(eff_light,eff_c,eff_b))
+        a.Define("btagSF__nom","btagSF[0]")
+        a.Define("btagSF__down","btagSF[1]")
+        a.Define("btagSF__up","btagSF[2]")
+
+        print("Average AK4 bTag weights nom/dn/up: {0:.3f} {1:.3f} {2:.3f}".format(a.DataFrame.Mean("btagSF__nom").GetValue(),a.DataFrame.Mean("btagSF__down").GetValue(),a.DataFrame.Mean("btagSF__up").GetValue()))
 
     a.Define("pnet0","FatJet_particleNetMD_Xbb[0]/(FatJet_particleNetMD_Xbb[0]+FatJet_particleNetMD_QCD[0])")
     a.Define("deepTag0","FatJet_deepTagMD_ZHbbvsQCD[0]")
@@ -294,7 +318,7 @@ def eventSelection(options):
     outputFile      = options.output.replace(".root","_{0}.root".format(options.variation))
 
     if not isData:
-        snapshotColumns.extend(['Pileup__nom','Pileup__up','Pileup__down','Pdfweight__up','Pdfweight__down','Pileup_nTrueInt','genWeight'])
+        snapshotColumns.extend(['Pileup__nom','Pileup__up','Pileup__down','Pdfweight__up','Pdfweight__down','Pileup_nTrueInt','genWeight','btagSF__nom','btagSF__down','btagSF__up'])
         
         if("ZJets" in options.process or "WJets" in options.process):
             snapshotColumns.append("jetCat")
