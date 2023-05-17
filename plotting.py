@@ -20,14 +20,14 @@ matplotlib.use('Agg')
 r.gROOT.SetBatch(True)
 r.gStyle.SetOptFit(111)
 
-def plotDeltaNLL(baseDir,odir,outFile,xRange=[0.,20.0],yRange=[0.,15.],signalFactor=10.,extraText="HZy coupling"):
+def plotDeltaNLL(baseDir,odir,outFile,xRange=[0.,30.0],yRange=[0.,15.],signalFactor=10.,extraText="HZy coupling"):
     f       = r.TFile.Open(baseDir+"/higgsCombineTest.MultiDimFit.mH125.root")
     ttree   = f.Get("limit")
     rs      = []
     dNLL    = []
-
+    hbbBR   = 0.58
     for event in ttree:
-        rs.append(event.r*signalFactor)
+        rs.append(event.r*signalFactor/hbbBR)
         dNLL.append(event.deltaNLL*2)
 
     plt.style.use([hep.style.CMS])
@@ -40,7 +40,7 @@ def plotDeltaNLL(baseDir,odir,outFile,xRange=[0.,20.0],yRange=[0.,15.],signalFac
     ax.set_xlim(xRange)
     ax.set_ylim(yRange)
 
-    plt.xlabel(r"$\sigma (pp\rightarrow H\gamma \rightarrow bb\gamma )$ [fb]",horizontalalignment='right', x=1.0)
+    plt.xlabel(r"$\sigma (pp\rightarrow H\gamma)$ [fb]",horizontalalignment='right', x=1.0)
     plt.ylabel("2$\Delta$ NLL",horizontalalignment='right', y=1.0)
     ax.yaxis.set_tick_params(which='minor', left=False)    
     ax.yaxis.set_tick_params(which='minor', right=False)    
@@ -63,6 +63,45 @@ def plotDeltaNLL(baseDir,odir,outFile,xRange=[0.,20.0],yRange=[0.,15.],signalFac
     plt.cla()
     plt.clf()
 
+
+def plotRPFMC(tplFile,odir,passTag="M",failTag="F",xRange=[60,200],yTitle="$R_{M/F}$",rebinX=1):
+    f = r.TFile.Open(tplFile)
+
+    hPass = f.Get("GJets_H_m_pT_{0}__nominal".format(passTag)).ProjectionX("hPass_temp")
+    hFail = f.Get("GJets_H_m_pT_{0}__nominal".format(failTag)).ProjectionX("hFail_temp")
+
+    hPass.RebinX(rebinX)
+    hFail.RebinX(rebinX)
+
+    foutName = "R{0}{1}_MC".format(passTag,failTag)
+
+    hRpf  = hPass.Clone("hRPF")
+    hRpf.Divide(hFail)
+    hRpf.Scale(1000)
+    maxRpf = hRpf.GetMaximum()
+
+    hRpf, edges = hist2array(hRpf,return_edges=True)
+    f.Close()
+
+    plt.style.use([hep.style.CMS])
+    f, ax = plt.subplots()
+    hep.histplot(hRpf, bins=edges[0])
+
+    hep.cms.text("Work in progress",loc=0)
+    
+    ax.set_xlim(xRange)
+    ax.set_ylim([0.,maxRpf*1.3])
+
+    plt.xlabel("$M_{PNet}$ [GeV]",horizontalalignment='right', x=1.0)
+    plt.ylabel(yTitle+" x $10^{3}$",horizontalalignment='right', y=1.0)
+    #ax.yaxis.set_tick_params(which='minor', left=False)    
+    #ax.yaxis.set_tick_params(which='minor', right=False)    
+
+    print("Saving "+odir+"{0}.pdf".format(foutName))
+    plt.savefig(odir+"/{0}.pdf".format(foutName), bbox_inches='tight')
+    plt.savefig(odir+"/{0}.png".format(foutName), bbox_inches='tight')
+    plt.cla()
+    plt.clf()
 
 
 def plotRPF(postfitShapesFile,odir,qcdTag,passTag="M",failTag="F",xRange=[60,200],yTitle="$R_{M/F}$"):
@@ -192,6 +231,10 @@ def plotVarStack(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=Tr
         tempFile = r.TFile.Open(sample_cfg["file"])
         #print("Opening ", sample_cfg["file"])
         h = tempFile.Get("{0}_{1}".format(sample,var))
+
+        if(sample=="ggFHbb"):
+            sigFlag  = True
+            h.Scale(10.)
 
         if(projection=="x"):
             h = h.ProjectionX(h.GetName()+"_x")
@@ -776,11 +819,16 @@ def plotVJets(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,
 
 if __name__ == '__main__':
 
-    # wp = "tight_medium"
-    # for year in ["2016","2016APV","2017","2018","RunII"]:
-    # #for year in ["RunII"]:
+    wp = "tight_medium"
+    #for year in ["2016","2016APV","2017","2018","RunII"]:
+    # for year in ["RunII"]:
     #     odir = "results/plots/{0}/{1}/".format(wp,year)
     #     Path(odir).mkdir(parents=True, exist_ok=True)
+    #     if(year=="RunII"):
+    #         plotRPFMC("results/templates/tight_medium/RunII/scaled/GJets.root",odir,passTag="M",failTag="F",xRange=[60,200],yTitle="$R_{M/F}$",rebinX=4)
+    #         plotRPFMC("results/templates/tight_medium/RunII/scaled/GJets.root",odir,passTag="T",failTag="F",xRange=[60,200],yTitle="$R_{T/F}$",rebinX=4)
+    #         plotRPFMC("results/templates/tight_medium/RunII/scaled/GJets.root",odir,passTag="T",failTag="M",xRange=[60,200],yTitle="$R_{T/M}$",rebinX=4)
+
         
     #     if(year=="2016APV"):
     #         luminosity="19.5"
@@ -820,9 +868,11 @@ if __name__ == '__main__':
     #         plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year),ylabel="Trigger efficiency / 50 GeV")
 
 
+    #for year in ["2016APV","2016","2017","2018","RunII"]:
     # for year in ["RunII"]:
     #     odir = "results/plots/tight_CR/{0}/".format(year)
     #     Path(odir).mkdir(parents=True, exist_ok=True)
+
         
     #     if(year=="2016APV"):
     #         luminosity="19.5"
@@ -837,8 +887,9 @@ if __name__ == '__main__':
 
     #     with open("plotConfigs/{0}_tight_CR.json".format(year)) as json_file:
     #         data = json.load(json_file)
-    #         plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_CR_T_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,projection="x",kFactor=1.15)
-    #         plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_lin_CR_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,projection="x",kFactor=0.95)
+    #         plotVarStack(data,"H_m_pT_CR_T__nominal","{0}/m_lin_CR_T_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,projection="x",kFactor=1.15,blind=False)
+    #         plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_lin_CR_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[0,None],log=False,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,projection="x",kFactor=0.95,blind=False)
+    #         plotVarStack(data,"H_m_pT_CR_F__nominal","{0}/m_CR_F_data.png".format(odir),xTitle="$M_{PNet}$ [GeV]",yTitle="Events / GeV",yRange=[10**2,10**10],log=True,xRange=[40,200],rebinX=1,luminosity=luminosity,mergeMassBins=True,projection="x",kFactor=0.95,blind=False)
 
     #         f = r.TFile.Open(data["data_obs"]["file"])#"JetHT16.root")
     #         print(data["data_obs"]["file"])
@@ -846,11 +897,11 @@ if __name__ == '__main__':
     #         hPass  = f.Get("data_obs_pT0triggersAll_nom")
     #         eff = r.TEfficiency(hPass,hTotal)
     #         eff.SetName("trig_eff")
-    #         #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
-    #         # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
-    #         # g.cd()
-    #         # eff.Write()
-    #         # g.Close()
+            #g   = r.TFile.Open("data/trig_eff_{0}.root".format(year),"RECREATE")
+            # g   = r.TFile.Open("trig_eff_{0}.root".format(year),"RECREATE")
+            # g.cd()
+            # eff.Write()
+            # g.Close()
 
     #         plotTriggerEff(hPass,hTotal,year,luminosity,"{0}/Trig_eff_{1}.pdf".format(odir,year))
 
@@ -874,10 +925,8 @@ if __name__ == '__main__':
     #Postfit
     cmsswArea       = "../CMSSW_10_6_14/src/"
     polyOrders      = ["1","1"]
-    #polyOrders      = ["2","2"]
-    #polyOrders      = ["3","3"]
     workingAreas    = ["SR_CR_Hyy","SR_CR_HZy"]
-
+    workingAreas    = ["SR_CR_HZy"]
 
 
     for workingArea in workingAreas:
@@ -891,22 +940,22 @@ if __name__ == '__main__':
         baseDir         = cmsswArea + workingArea + "/{0}SR_{1}CR_area/".format(polyOrders[0],polyOrders[1])
         fitFile         = baseDir+"postfitshapes_b.root"
         Path("results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1])).mkdir(parents=True, exist_ok=True)
-        plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_{0}".format(polyOrders[0]),yTitle="$R_{M/F}$")
-        plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_{0}".format(polyOrders[0]),passTag="T",yTitle="$R_{T/F}$")
-        plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_CR_{0}".format(polyOrders[1]),passTag="CR_T",failTag="CR_F",xRange=[60,150],yTitle="$R_{T/F}^{0\gamma}$")
-        plotDeltaNLL(baseDir,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"DeltaNLL",extraText=coupling)
+        # plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_{0}".format(polyOrders[0]),yTitle="$R_{M/F}$")
+        # plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_{0}".format(polyOrders[0]),passTag="T",yTitle="$R_{T/F}$")
+        # plotRPF(fitFile,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"qcd_CR_{0}".format(polyOrders[1]),passTag="CR_T",failTag="CR_F",xRange=[60,150],yTitle="$R_{T/F}^{0\gamma}$")
+        # plotDeltaNLL(baseDir,"results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),"DeltaNLL",extraText=coupling)
 
         try:
-            plotPostfit(fitFile,"T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"M","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),blind=False,binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"M","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),blind=False,binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal,plotSlices=False)
-            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
-            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
+            # plotPostfit(fitFile,"T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
+            # plotPostfit(fitFile,"M","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal)
+            # plotPostfit(fitFile,"F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),blind=False,binWidthDivision=False,signal=signal)
+            # plotPostfit(fitFile,"T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
+            # plotPostfit(fitFile,"M","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal)
+            # plotPostfit(fitFile,"F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),blind=False,binWidthDivision=True,signal=signal)
+            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal,plotSlices=False,blind=False)
+            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=True,signal=signal,blind=False)
+            plotPostfit(fitFile,"CR_T","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal,blind=False)
+            plotPostfit(fitFile,"CR_F","results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1]),binWidthDivision=False,signal=signal,blind=False)
 
         except:
            print("Couldn't plot for {0} {1}".format(workingArea,polyOrder))

@@ -3,31 +3,31 @@
     "file": "results/templates/tight_medium/RunII/scaled/ZGamma.root",
     "color":"blue",
     "label": "Z+$\\gamma$",
-    "order": 4
+    "order": 1
   },
   "WGamma": {
     "file": "results/templates/tight_medium/RunII/scaled/WGamma.root",
     "color":"slateblue",
     "label": "W+$\\gamma$",
-    "order": 3
+    "order": 7
   },
   "GJets": {
     "file": "results/templates/tight_medium/RunII/scaled/GJets.root",
     "color":"deepskyblue",
     "label": "$\\gamma$+Jets",
-    "order": 1
+    "order": 2
   },
   "QCD": {
     "file": "results/templates/tight_medium/RunII/scaled/QCD.root",
     "color":"wheat",
     "label": "QCD",
-    "order": 2
+    "order": 3
   },
   "TTGJets": {
     "file": "results/templates/tight_medium/RunII/scaled/TTGJets.root",
     "color":"lavender",
     "label": "$t\\overline{t}+\\gamma$",
-    "order": 2
+    "order": 5
   },
   "Hgamma_Hyy": {
     "file": "results/templates/tight_medium/RunII/scaled/Hgamma_Hyy.root",
