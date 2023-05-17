@@ -225,7 +225,8 @@ if(options.variation=="nom"):
             continue
         h.SetDirectory(0)
         if("cutflow" in hName.lower()):
-            h.SetBinContent(h.GetNbinsX()-1,regionYields["T"])
+            h.SetBinContent(h.GetNbinsX()-2,regionYields["T"])
+            h.SetBinContent(h.GetNbinsX()-1,regionYields["M"])
             h.SetBinContent(h.GetNbinsX(),regionYields["F"])
         histos.append(h)
 
