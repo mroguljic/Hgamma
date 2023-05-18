@@ -125,10 +125,12 @@ else:
 CompileCpp('btagSFHandler btagHandler = btagSFHandler({%f,%f},{%f,%f},%s,%i);' %(taggerWpLo,taggerWpUp,eff_M,eff_T,'"{0}"'.format(year),pnetVar))#wps, efficiencies, year, var
 a.Define("TaggerCat","btagHandler.createTaggingCategories(pnetHiggs)")
 
-if("Hgamma" in options.process or "ZGamma" in options.process):
-    a.Define("ScaledPnet","btagHandler.updateTaggingCategories(TaggerCat,Higgs_pt)")
-else:
-    a.Define("ScaledPnet","TaggerCat")
+#We do not want to apply PNet, it will be constrained in the fit!
+# if("Hgamma" in options.process or "ZGamma" in options.process):
+#     a.Define("ScaledPnet","btagHandler.updateTaggingCategories(TaggerCat,Higgs_pt)")
+# else:
+#     a.Define("ScaledPnet","TaggerCat")
+a.Define("ScaledPnet","TaggerCat")
 
 if isData:
     a.Define("genWeight","1")
