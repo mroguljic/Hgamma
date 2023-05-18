@@ -247,7 +247,6 @@ def eventSelection(options):
 
     if not isData:
         #Calculate AK4 btag SF weights
-        btvjson = correctionlib.CorrectionSet.from_file("btagging.json.gz")
         ROOT.gInterpreter.Declare('correction::Correction::Ref correction_bc = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_comb");'.format(year))
         ROOT.gInterpreter.Declare('correction::Correction::Ref correction_light = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_incl");'.format(year))
         a.Define("btagSF","calcBtagWeight(correction_light,correction_bc,Higgs_eta,Higgs_phi,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_hadronFlavour,{0},{1},{2})".format(eff_light,eff_c,eff_b))
