@@ -150,6 +150,9 @@ if not isData:
         puCorr      = genWCorr.Clone("puUnc",newMainFunc="evalWeight",newType="weight")
         a.AddCorrection(pdfCorr, evalArgs={'valUp':'Pdfweight__up','valDown':'Pdfweight__down'})
         a.AddCorrection(puCorr, evalArgs={'val':'Pileup__nom','valUp':'Pileup__up','valDown':'Pileup__down'})
+    
+    btagCorr        = genWCorr.Clone("btagUnc",newMainFunc="evalWeight",newType="weight")
+    a.AddCorrection(btagCorr, evalArgs={'val':'btagSF__nom','valUp':'btagSF__up','valDown':'btagSF__down'})
 
     if "ZGamma" in options.process:
         NLOfile    = "data/ewk_corr.root"

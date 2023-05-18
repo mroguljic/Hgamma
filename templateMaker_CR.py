@@ -190,6 +190,9 @@ if not isData:
     a.AddCorrection(pdfCorr, evalArgs={'valUp':'Pdfweight__up','valDown':'Pdfweight__down'})
     a.AddCorrection(puCorr, evalArgs={'val':'Pileup__nom','valUp':'Pileup__up','valDown':'Pileup__down'})
 
+    btagCorr        = genWCorr.Clone("btagUnc",newMainFunc="evalWeight",newType="weight")
+    a.AddCorrection(btagCorr, evalArgs={'val':'btagSF__nom','valUp':'btagSF__up','valDown':'btagSF__down'})
+
     if(year=="2018"):
         hemCorr = genWCorr.Clone("hemCorrection")
         a.AddCorrection(hemCorr, evalArgs={'val':'HEM_drop__nom'})
@@ -238,7 +241,7 @@ if not isData:
 
 a.MakeWeightCols()
 
-regionDefs      = [("CR_T","ScaledPnet==2"),("CR_F","ScaledPnet<2")]
+regionDefs      = [("CR_T","ScaledPnet==2"),("CR_M","ScaledPnet==1"), ("CR_F","ScaledPnet<1") ,("CR_FM","ScaledPnet<2")]
 regionYields    = {}
 
 for region,cut in regionDefs:
