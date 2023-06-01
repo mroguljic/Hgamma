@@ -19,7 +19,7 @@ cd ../..
 #Boost library path (the boost version as well!) may change depending on scram arch and the CMSSW version so this may need to be modified by hand 
 #Copy the whole multi-line string to activate script
 cat <<EOT >> timber-env/bin/activate
-\nexport BOOSTPATH=/cvmfs/cms.cern.ch/slc7_amd64_gcc10/external/boost/1.75.0/lib
+nexport BOOSTPATH=/cvmfs/cms.cern.ch/slc7_amd64_gcc10/external/boost/1.75.0/lib
 if grep -q '\${BOOSTPATH}' <<< '\${LD_LIBRARY_PATH}'
 then
   echo 'BOOSTPATH already on LD_LIBRARY_PATH'
