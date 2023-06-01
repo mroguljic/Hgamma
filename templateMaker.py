@@ -35,6 +35,39 @@ def getTaggingEfficiencies(analyzer,wpM,wpT):
     analyzer.SetActiveNode(beforeNode)
     return effM, effT
 
+def separateVHistos(analyzer,process,region,nomTreeFlag,massVar):
+    cats = {
+    "light" : "jetCat==1",
+    "c"     : "jetCat==2",
+    "b"     : "jetCat==3",
+    "bc"    : "jetCat==3 || jetCat==2",
+    "unm"   : "jetCat==0"}
+
+    separatedHistos = []
+    separatedGroups = []
+    beforeNode = analyzer.GetActiveNode()
+    for cat in cats:
+        analyzer.SetActiveNode(beforeNode)
+        analyzer.Cut("{0}_{1}_{2}_cut".format(process,cat,region),"{0}".format(cats[cat]))
+
+        if nomTreeFlag:
+            tplHist     = r.TH2F('{0}_{1}_H_m_pT_{2}'.format(process,cat,region),';{0} [GeV];pT [GeV];'.format(massVar),32,40,200,17,300,2000)
+            tplmass     = r.TH1F('{0}_{1}_H_m_{2}'.format(process,cat,region),';{0} [GeV];pT [GeV];'.format(massVar),32,40,200)
+            GammaptHist = analyzer.DataFrame.Histo1D(('{0}_{1}_Gamma_pT_{2}'.format(process,cat,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight__nominal")
+
+            templates       = analyzer.MakeTemplateHistos(tplHist,[massVar,"Higgs_pt"])
+            templatesMass   = analyzer.MakeTemplateHistos(tplmass,[massVar])
+            separatedGroups.append(templates)
+            separatedGroups.append(templatesMass)
+            separatedHistos.append(GammaptHist)
+        else:
+            #For jms/jmr/jes/jer trees, we don't need to calculate uncertainties on nominal trees
+            hist = analyzer.DataFrame.Histo2D(('{0}_{1}_H_m_pT_{2}'.format(process,cat,region),';{0} [GeV];pT [GeV];'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight__nominal")
+            separatedHistos.append(hist)
+
+    analyzer.SetActiveNode(beforeNode)
+    return separatedHistos,separatedGroups
+
 
 parser = OptionParser()
 
@@ -211,6 +244,12 @@ for region,cut in regionDefs:
         histGroups.append(templates2D)
         histos.append(HptHist)
         histos.append(GammaptHist)
+
+        if(variation=="nom" and options.process=="ZGamma"):
+            categorizedHistos, categorizedGroups = separateVHistos(a,options.process,region,nomTreeFlag,massVar)
+            histos.extend(categorizedHistos)
+            histGroups.extend(categorizedGroups)
+
     else:
         #For jms/jmr/jes/jer trees, we don't need to calculate uncertainties on nominal trees
         template   = a.DataFrame.Histo1D(('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight__nominal")

@@ -49,5 +49,29 @@
   },
   "ggFHbb": {
     "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/ggFHbb"
-  }  
+  },
+  "VBFHbb": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/VBFHbb"
+  },
+  "WplusHLNubb": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/WplusHLNubb"
+  },
+  "WplusHQQbb": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/WplusHQQbb"
+  },
+  "ttHbb": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/ttHbb"
+  },
+  "WminusHLNubb": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/WminusHLNubb"
+  },
+  "WminusHQQbb": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/WminusHQQbb"
+  },
+  "ZHHbbZQQ": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/ZHHbbZQQ"
+  },
+  "ZHHbbZLL": {
+    "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2017/ZHHbbZLL"
+  } 
 }

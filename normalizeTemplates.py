@@ -60,7 +60,8 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
 
     #processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","GJetsHT200","GJetsHT400","GJetsHT600","TTGJets","Hgamma"
     #,"QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
-    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma_Hyy","Hgamma_HZy","QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
+    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma_Hyy","Hgamma_HZy","QCD500","QCD700","QCD1000","QCD1500","QCD2000",
+    "ggFHbb","VBFHbb","WplusHLNubb","WplusHQQbb","ttHbb","WminusHLNubb","WminusHQQbb","ZHHbbZQQ","ZHHbbZLL"]
     for year in ['2016','2016APV','2017','2018']:
         print(year)
         nonScaledDir = "results/templates/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
@@ -92,13 +93,17 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
         # ttSamples = [lumiScaledDir+f for f in ttSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
         # mergeSamples(ttSamples,"{0}/TTbar{1}.root".format(lumiScaledDir,year[2:]),"TTSemileptonic|TTHadronic","TTbar")
 
+        smHiggsSamples  = ["ggFHbb.root","VBFHbb.root","WplusHLNubb.root","WplusHQQbb.root",
+                           "ttHbb.root","WminusHLNubb.root","WminusHQQbb.root","ZHHbbZQQ.root","ZHHbbZLL.root",]
+        smHiggsSamples  = [lumiScaledDir+f for f in smHiggsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        mergeSamples(smHiggsSamples,"{0}/SMHiggs{1}.root".format(lumiScaledDir,year[2:]),"^[a-zA-Z]*","SMHiggs")
 
         SinglePhotonSamples = [nonScaledDir+f for f in os.listdir(nonScaledDir) if (os.path.isfile(os.path.join(nonScaledDir, f)) and "SinglePhoton" in f)]
         mergeSamples(SinglePhotonSamples,"{0}/SinglePhoton{1}.root".format(lumiScaledDir,year[2:]),"SinglePhoton201[0-9][a-zA-Z0-9]+_","data_obs_")
 
 def lumiNormalizationCR(wp="tight",tagger="ParticleNet"):
     processes = ["QCD700","QCD1000","QCD1500","QCD2000","ZJets400","ZJets600","ZJets800","WJets400",
-    "WJets600","WJets800","TTbarHadronic","ggFHbb"]
+    "WJets600","WJets800","TTbarHadronic","ggFHbb","VBFHbb","WplusHLNubb","WplusHQQbb","ttHbb","WminusHLNubb","WminusHQQbb","ZHHbbZQQ","ZHHbbZLL"]
     for year in ['2016','2016APV','2017','2018']:
         print(year)
         nonScaledDir = "results/templates_CR/{2}/{0}/{1}/nonScaled/".format(wp,year,tagger)
@@ -130,6 +135,12 @@ def lumiNormalizationCR(wp="tight",tagger="ParticleNet"):
         ttSamples = [lumiScaledDir+f for f in ttSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
         mergeSamples(ttSamples,"{0}/TTbar{1}.root".format(lumiScaledDir,year[2:]),"TTbarSemileptonic|TTbarMtt700|TTbarMtt1000|TTbarHadronic","TTbar")
 
+        smHiggsSamples  = ["ggFHbb.root","VBFHbb.root","WplusHLNubb.root","WplusHQQbb.root",
+                           "ttHbb.root","WminusHLNubb.root","WminusHQQbb.root","ZHHbbZQQ.root","ZHHbbZLL.root",]
+        smHiggsSamples  = [lumiScaledDir+f for f in smHiggsSamples if (os.path.isfile(os.path.join(lumiScaledDir, f)))]
+        mergeSamples(smHiggsSamples,"{0}/SMHiggs{1}.root".format(lumiScaledDir,year[2:]),"^[a-zA-Z]*","SMHiggs")
+
+
         JetHTSamples = [nonScaledDir+f for f in os.listdir(nonScaledDir) if (os.path.isfile(os.path.join(nonScaledDir, f)) and "JetHT" in f)]
         mergeSamples(JetHTSamples,"{0}/JetHT{1}.root".format(lumiScaledDir,year[2:]),"JetHT201[0-9][a-zA-Z0-9]+_","data_obs_")
 
@@ -146,6 +157,16 @@ def mergeRunII(wp,tagger):
     os.system("hadd -f {0}/QCD.root {1}/201*/scaled/QCD1?.root {1}/201*/scaled/QCD1?APV.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/Hgamma_Hyy.root {1}/201*/scaled/Hgamma_Hyy.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/Hgamma_HZy.root {1}/201*/scaled/Hgamma_HZy.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ggFHbb.root {1}/201*/scaled/ggFHb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/VBFHbb.root {1}/201*/scaled/VBFHbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WplusHLNubb.root {1}/201*/scaled/WplusHLNubb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WplusHQQbb.root {1}/201*/scaled/WplusHQQbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ttHbb.root {1}/201*/scaled/ttHbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WminusHLNubb.root {1}/201*/scaled/WminusHLNubb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WminusHQQbb.root {1}/201*/scaled/WminusHQQbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ZHHbbZQQ.root {1}/201*/scaled/ZHHbbZQQ*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ZHHbbZLL.root {1}/201*/scaled/ZHHbbZLL*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/SMHiggs.root {1}/201*/scaled/SMHiggs*.root".format(runIIDir,lumiScaledDir))
 
 def mergeRunIICR(wp,tagger):
     lumiScaledDir = "results/templates_CR/{0}/{1}".format(tagger,wp)
@@ -157,10 +178,19 @@ def mergeRunIICR(wp,tagger):
     os.system("hadd -f {0}/WJets.root {1}/201*/scaled/WJets1*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/TTbar.root {1}/201*/scaled/TTbar1*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/ggFHbb.root {1}/201*/scaled/ggFHb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/VBFHbb.root {1}/201*/scaled/VBFHbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WplusHLNubb.root {1}/201*/scaled/WplusHLNubb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WplusHQQbb.root {1}/201*/scaled/WplusHQQbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ttHbb.root {1}/201*/scaled/ttHbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WminusHLNubb.root {1}/201*/scaled/WminusHLNubb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/WminusHQQbb.root {1}/201*/scaled/WminusHQQbb*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ZHHbbZQQ.root {1}/201*/scaled/ZHHbbZQQ*.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/ZHHbbZLL.root {1}/201*/scaled/ZHHbbZLL*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/QCD.root {1}/201*/scaled/QCD1?.root {1}/201*/scaled/QCD1?APV.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/SMHiggs.root {1}/201*/scaled/SMHiggs*.root".format(runIIDir,lumiScaledDir))
 
 if __name__ == '__main__':
-    #lumiNormalization(wp="tight_medium",tagger="/")
-    #mergeRunII("tight_medium","/")
-    lumiNormalizationCR(wp="tight_medium",tagger="/")
-    mergeRunIICR(wp="tight_medium",tagger="/")
+    lumiNormalization(wp="tight_medium",tagger="/")
+    mergeRunII("tight_medium","/")
+    #lumiNormalizationCR(wp="tight_medium",tagger="/")
+    #mergeRunIICR(wp="tight_medium",tagger="/")

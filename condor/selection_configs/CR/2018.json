@@ -46,5 +46,29 @@
   },
   "ggFHbb": {
     "dataset":"/STORE/matej/Zbb_skims/v9_py3_with_photon/2018/ggFHbb"
-  }  
+  },
+  "VBFHbb": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/VBFHbb"
+  },
+  "WplusHLNubb": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/WplusHLNubb"
+  },
+  "WplusHQQbb": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/WplusHQQbb"
+  },
+  "ttHbb": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/ttHbb"
+  },
+  "WminusHLNubb": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/WminusHLNubb"
+  },
+  "WminusHQQbb": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/WminusHQQbb"
+  },
+  "ZHHbbZQQ": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/ZHHbbZQQ"
+  },
+  "ZHHbbZLL": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2018/ZHHbbZLL"
+  }
 }

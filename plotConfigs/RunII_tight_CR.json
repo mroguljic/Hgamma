@@ -53,10 +53,10 @@
     "label": "Multijets",
     "order": 3
   },
-  "ggFHbb": {
-    "file": "results/templates_CR/tight_medium/RunII/scaled/ggFHbb.root",
-    "color":"red",
-    "label": "ggFHbb",
+  "SMHiggs": {
+    "file": "results/templates_CR/tight_medium/RunII/scaled/SMHiggs.root",
+    "color":"green",
+    "label": "$SM\\;H(bb)\\;x10$",
     "order": 7
   },
   "data_obs": {

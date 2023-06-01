@@ -13,4 +13,8 @@ python run_selection.py -y 2016
 python run_selection.py -y 2017
 python run_selection.py -y 2018
 
+python run_selection_CR.py -y RunII
+
+
 python run_templates.py tight medium
+python run_templates_CR.py tight medium

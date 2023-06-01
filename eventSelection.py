@@ -147,7 +147,6 @@ def eventSelection(options):
     if("ZGamma" in options.process):
         a.Define("genGammaPt","genGammaPt(nGenPart,GenPart_pdgId,GenPart_pt,GenPart_statusFlags)")
 
-
     #----------Selection-----------#
     a.Cut("JetAndPhoton","nFatJet>0 && nPhoton>0")
     a.Define("Hidx","leadingNonGammaAK8Idx(nFatJet,FatJet_eta,FatJet_phi,Photon_eta[0],Photon_phi[0])")
@@ -189,6 +188,10 @@ def eventSelection(options):
 
 
     a.Apply([evtColumns])
+
+    if("ZGamma" in options.process):
+        a.Define("jetCat","classifyZJet(Higgs_phi, Higgs_eta, nGenPart, GenPart_phi, GenPart_eta, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags)")
+
 
     #Apply photon energy scale/resolution unc. scale factors
     if("photonEs" in options.variation):
@@ -236,9 +239,9 @@ def eventSelection(options):
         a.Define("c_tot","Jet_counts[4]")
         a.Define("b_tot","Jet_counts[5]")
 
-        eff_light = a.DataFrame.Sum("light_pass").GetValue()/a.DataFrame.Sum("light_tot").GetValue()
-        eff_c = a.DataFrame.Sum("c_pass").GetValue()/a.DataFrame.Sum("c_tot").GetValue()
-        eff_b = a.DataFrame.Sum("b_pass").GetValue()/a.DataFrame.Sum("b_tot").GetValue()
+        eff_light = a.DataFrame.Sum("light_pass").GetValue()/(a.DataFrame.Sum("light_tot").GetValue()+0.001)
+        eff_c = a.DataFrame.Sum("c_pass").GetValue()/(a.DataFrame.Sum("c_tot").GetValue()+0.001)#avoid division by zero
+        eff_b = a.DataFrame.Sum("b_pass").GetValue()/(a.DataFrame.Sum("b_tot").GetValue()+0.001)
         print("Efficiencies l/c/b: {0:.3f} {1:.3f} {2:.3f}".format(eff_light,eff_c,eff_b))
 
 
@@ -315,6 +318,7 @@ def eventSelection(options):
 
     if("ZGamma" in options.process):
         snapshotColumns.append("genGammaPt")
+        snapshotColumns.append("jetCat")
 
 
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)

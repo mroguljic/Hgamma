@@ -26,7 +26,15 @@
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
  "TTSemileptonic": {"xsec": 365.34},
- "ggFHbb": {"xsec": 0.274},
+ "ggFHbb": {"xsec": 0.273},
+ "VBFHbb": {"xsec": 2.25},
+ "WplusHLNubb": {"xsec": 0.164},
+ "WplusHQQbb": {"xsec": 0.213},
+ "WminusHLNubb": {"xsec": 0.103},
+ "WminusHQQbb": {"xsec": 0.159},
+ "ttHbb": {"xsec": 0.306},
+ "ZHHbbZQQ": {"xsec": 0.325},
+ "ZHHbbZLL": {"xsec": 0.046},
  "lumi":16800
  },
 "2016APV":{
@@ -56,7 +64,15 @@
  "ZJets400": {"xsec": 114.2},
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
- "ggFHbb": {"xsec": 0.274},
+ "ggFHbb": {"xsec": 0.273},
+ "VBFHbb": {"xsec": 2.25},
+ "WplusHLNubb": {"xsec": 0.164},
+ "WplusHQQbb": {"xsec": 0.213},
+ "WminusHLNubb": {"xsec": 0.103},
+ "WminusHQQbb": {"xsec": 0.159},
+ "ttHbb": {"xsec": 0.306},
+ "ZHHbbZQQ": {"xsec": 0.325},
+ "ZHHbbZLL": {"xsec": 0.046},
  "lumi":19500
  },
 "2017":{
@@ -86,7 +102,15 @@
  "ZJets400": {"xsec": 114.2},
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
- "ggFHbb": {"xsec": 0.274},
+ "ggFHbb": {"xsec": 0.273},
+ "VBFHbb": {"xsec": 2.25},
+ "WplusHLNubb": {"xsec": 0.164},
+ "WplusHQQbb": {"xsec": 0.213},
+ "WminusHLNubb": {"xsec": 0.103},
+ "WminusHQQbb": {"xsec": 0.159},
+ "ttHbb": {"xsec": 0.306},
+ "ZHHbbZQQ": {"xsec": 0.325},
+ "ZHHbbZLL": {"xsec": 0.046},
  "lumi":41500
 },
  "2018":{
@@ -116,7 +140,15 @@
  "ZJets400": {"xsec": 114.2},
  "ZJets600": {"xsec": 25.36},
  "ZJets800": {"xsec": 12.9},
- "ggFHbb": {"xsec": 0.274},
+ "ggFHbb": {"xsec": 0.273},
+ "VBFHbb": {"xsec": 2.25},
+ "WplusHLNubb": {"xsec": 0.164},
+ "WplusHQQbb": {"xsec": 0.213},
+ "WminusHLNubb": {"xsec": 0.103},
+ "WminusHQQbb": {"xsec": 0.159},
+ "ttHbb": {"xsec": 0.306},
+ "ZHHbbZQQ": {"xsec": 0.325},
+ "ZHHbbZLL": {"xsec": 0.046},
  "lumi":59800
  }
 }

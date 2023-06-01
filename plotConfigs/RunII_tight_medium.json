@@ -1,31 +1,49 @@
 {
-  "ZGamma": {
+  "ZGamma_bc": {
     "file": "results/templates/tight_medium/RunII/scaled/ZGamma.root",
     "color":"blue",
-    "label": "Z+$\\gamma$",
+    "label": "Z+$\\gamma$ bb",
+    "order": 1
+  },
+  "ZGamma_c": {
+    "file": "results/templates/tight_medium/RunII/scaled/ZGamma.root",
+    "color":"slateblue",
+    "label": "Z+$\\gamma$ cc",
+    "order": 1
+  },
+  "ZGamma_light": {
+    "file": "results/templates/tight_medium/RunII/scaled/ZGamma.root",
+    "color":"deepskyblue",
+    "label": "Z+$\\gamma$ light",
+    "order": 1
+  },
+  "ZGamma_unm": {
+    "file": "results/templates/tight_medium/RunII/scaled/ZGamma.root",
+    "color":"lavender",
+    "label": "Z+$\\gamma$ unm",
     "order": 1
   },
   "WGamma": {
     "file": "results/templates/tight_medium/RunII/scaled/WGamma.root",
-    "color":"slateblue",
+    "color":"salmon",
     "label": "W+$\\gamma$",
     "order": 7
   },
   "GJets": {
     "file": "results/templates/tight_medium/RunII/scaled/GJets.root",
-    "color":"deepskyblue",
+    "color":"wheat",
     "label": "$\\gamma$+Jets",
     "order": 2
   },
   "QCD": {
     "file": "results/templates/tight_medium/RunII/scaled/QCD.root",
-    "color":"wheat",
+    "color":"gold",
     "label": "QCD",
     "order": 3
   },
   "TTGJets": {
     "file": "results/templates/tight_medium/RunII/scaled/TTGJets.root",
-    "color":"lavender",
+    "color":"magenta",
     "label": "$t\\overline{t}+\\gamma$",
     "order": 5
   },
@@ -33,6 +51,12 @@
     "file": "results/templates/tight_medium/RunII/scaled/Hgamma_Hyy.root",
     "color":"tomato",
     "label": "$H+\\gamma\\;(H\\gamma\\gamma)$",
+    "order": 7
+  },
+  "SMHiggs": {
+    "file": "results/templates/tight_medium/RunII/scaled/SMHiggs.root",
+    "color":"green",
+    "label": "$SM\\;H(bb)\\;x10$",
     "order": 7
   },
   "data_obs": {

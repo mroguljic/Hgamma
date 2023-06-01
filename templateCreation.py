@@ -22,7 +22,10 @@ if("2018/" in iDir):
     year="2018"
 
 
-variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","pnetUp","pnetDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
+#variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","pnetUp","pnetDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
+
+#no pnet
+variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
 for variation in variations:
     if(variation!="nom"):
         if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample or "WJets" in sample or "ZJets" in sample or "ggFHbb" in sample):
