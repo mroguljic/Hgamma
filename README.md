@@ -9,7 +9,7 @@ cd ..
 python3 -m virtualenv timber-env
 echo -e "\ncd CMSSW_12_3_0\neval \`scram runtime -sh\`\ncd ..\n" >> timber-env/bin/activate
 source timber-env/bin/activate
-git clone -b Zbb_branch_py3 git@github.com:mroguljic/TIMBER.git
+git clone -b Hgamma git@github.com:mroguljic/TIMBER.git
 cd TIMBER
 mkdir bin
 cd bin
