@@ -29,8 +29,8 @@
     "label": "$t\\overline{t}+\\gamma$",
     "order": 2
   },
-  "Hgamma_Hyy": {
-    "file": "results/templates/tight_medium/2016APV/scaled/Hgamma_Hyy.root",
+  "HgammaHyy": {
+    "file": "results/templates/tight_medium/2016APV/scaled/HgammaHyy.root",
     "color":"tomato",
     "label": "$H+\\gamma\\;(H\\gamma\\gamma)$",
     "order": 7

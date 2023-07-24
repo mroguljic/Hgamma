@@ -31,5 +31,11 @@
   },  
   "QCD2000": {
     "dataset":"/QCD_HT2000toInf_TuneCP5_PSWeights_13TeV-madgraph-pythia8/RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1/NANOAODSIM"
+  },
+  "HgammaHZy": {
+    "dataset":"/ZGHToBB_M125_TuneCP5_13TeV-jhugenV750-pythia8/RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1/NANOAODSIM"
+  },
+  "HgammaHyy": {
+    "dataset":"/GGHToBB_M125_TuneCP5_13TeV-jhugenV750-pythia8/RunIISummer20UL16NanoAODAPVv9-106X_mcRun2_asymptotic_preVFP_v11-v1/NANOAODSIM"
   }
 }

@@ -61,6 +61,12 @@
   },
   "ZHHbbZLL": {
     "dataset":"/ZH_HToBB_ZToLL_M-125_TuneCP5_13TeV-powheg-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM"
+  },
+  "HgammaHZy": {
+    "dataset":"/ZGHToBB_M125_TuneCP5_13TeV-jhugenV750-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM"
+  },
+  "HgammaHyy": {
+    "dataset":"/GGHToBB_M125_TuneCP5_13TeV-jhugenV750-pythia8/RunIISummer20UL17NanoAODv9-106X_mc2017_realistic_v9-v1/NANOAODSIM"
   }
 }
 
