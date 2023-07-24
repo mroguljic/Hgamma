@@ -146,6 +146,9 @@ def eventSelection(options):
 
     if("ZGamma" in options.process):
         a.Define("genGammaPt","genGammaPt(nGenPart,GenPart_pdgId,GenPart_pt,GenPart_statusFlags)")
+        a.Define("genZPt","genZPt(nGenPart,GenPart_pdgId,GenPart_pt,GenPart_statusFlags)")
+        #dis = a.DataFrame.Display(["genZPt","genGammaPt"],20)
+        #dis.Print()
 
     #----------Selection-----------#
     a.Cut("JetAndPhoton","nFatJet>0 && nPhoton>0")
@@ -318,6 +321,7 @@ def eventSelection(options):
 
     if("ZGamma" in options.process):
         snapshotColumns.append("genGammaPt")
+        snapshotColumns.append("genZPt")
         snapshotColumns.append("jetCat")
 
 

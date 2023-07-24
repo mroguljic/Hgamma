@@ -180,22 +180,30 @@ if not isData:
     a.AddCorrection(photIDCorr, evalArgs={'xval':'Gamma_eta','yval':'Gamma_pt_CutID','zval':0})
 
     if not "Hgamma" in options.process:
-        #Private signal does not have proper pdf nor pu correction
+        #Private signal does not have proper pdf correction
         pdfCorr     = genWCorr.Clone("pdfUnc",newMainFunc="evalUncert",newType="uncert")
-        puCorr      = genWCorr.Clone("puUnc",newMainFunc="evalWeight",newType="weight")
         a.AddCorrection(pdfCorr, evalArgs={'valUp':'Pdfweight__up','valDown':'Pdfweight__down'})
-        a.AddCorrection(puCorr, evalArgs={'val':'Pileup__nom','valUp':'Pileup__up','valDown':'Pileup__down'})
     
+    puCorr      = genWCorr.Clone("puUnc",newMainFunc="evalWeight",newType="weight")
+    a.AddCorrection(puCorr, evalArgs={'val':'Pileup__nom','valUp':'Pileup__up','valDown':'Pileup__down'})
     btagCorr        = genWCorr.Clone("btagUnc",newMainFunc="evalWeight",newType="weight")
     a.AddCorrection(btagCorr, evalArgs={'val':'btagSF__nom','valUp':'btagSF__up','valDown':'btagSF__down'})
 
     if "ZGamma" in options.process:
-        NLOfile    = "data/ewk_corr.root"
-        ewkName    = "zgamma_ewk"
-        a.Define("genGammaPt_rescaled","TMath::Max(200.,TMath::Min(Double_t(genGammaPt),1000.))")#Weights applied in 200-2000 GeV gen V pt range
+        NLOfile    = "data/ewk_zgamma.root"
+        ewkName    = "nominal"
+        a.Define("genZPt_rescaled","TMath::Max(200.,TMath::Min(Double_t(genZPt),1000.))")#Weights applied in 200-2000 GeV gen V pt range
         NLOewkCorr = Correction('ewk_nlo',"TIMBER/Framework/src/HistLoader.cc",constructor=[NLOfile,ewkName],corrtype='corr',isClone=True,cloneFuncInfo=photIDCorr._funcInfo,isNewConstr=True)
-        a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genGammaPt_rescaled','yval':0,'zval':0})
-    if "ZGamma" in options.process or "WGamma" in options.process:
+        a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genZPt_rescaled','yval':0,'zval':0})
+        if nomTreeFlag:
+        #if False:
+            uncUp      = "uncUp"
+            uncDown    = "uncDn"
+            print(NLOfile,uncUp,uncDown)
+            nloSystUnc = Correction("ewk_unc","TIMBER/Framework/Zbb_modules/UncLoader.cc",constructor=[NLOfile,uncUp,uncDown],corrtype='uncert',isClone=False,cloneFuncInfo=None,isNewConstr=False)
+            a.AddCorrection(nloSystUnc, evalArgs={'xval':'genZPt_rescaled','yval':0,'zval':0})
+
+    if "ZGamma" in options.process or "WGamma" in options.process or "Hgamma" in options.process:
         ISRcorr    = genWCorr.Clone("ISRunc",newMainFunc="evalUncert",newType="uncert")
         FSRcorr    = genWCorr.Clone("FSRunc",newMainFunc="evalUncert",newType="uncert")
         a.AddCorrection(ISRcorr, evalArgs={'valUp':'ISR__up','valDown':'ISR__down'})
