@@ -8,12 +8,11 @@ from TIMBER.Tools.Common import *
 from TIMBER.Analyzer import *
 import sys
 
-def eventSelection(options):
+def eventSelection(fileName,outFile,year):
 
     #----Initialize RDataFrame-----#
     start_time = time.time()
-    year = options.year
-    a = analyzer(options.input)
+    a = analyzer(fileName)
 
     # #For testing only, faster execution
     # nToRun = 1000
@@ -22,18 +21,15 @@ def eventSelection(options):
     # a.SetActiveNode(small_node)
 
     #nProc = a.DataFrame.Count().GetValue()
-    CompileCpp("TIMBER/Framework/Zbb_modules/Zbb_Functions.cc") 
-    CompileCpp("TIMBER/Framework/Zbb_modules/helperFunctions.cc") 
-
     histos          = []
 
-    if(options.year=="2016APV"):
+    if(year=="2016APV"):
        deepJetM    = 0.2598
-    elif(options.year=="2016"):
+    elif(year=="2016"):
        deepJetM    = 0.2489
-    elif(options.year=="2017"):
+    elif(year=="2017"):
        deepJetM    = 0.3040
-    elif(options.year=="2018"):
+    elif(year=="2018"):
        deepJetM    = 0.2783
     else:
         print("Year not supported")
@@ -106,8 +102,7 @@ def eventSelection(options):
     histos.append(h2_numer)
     histos.append(h_pT_numer)
     #------------------------------#
-    outputFile      = options.output
-    out_f = ROOT.TFile(outputFile,"RECREATE")
+    out_f = ROOT.TFile(outFile,"RECREATE")
     out_f.cd()
     for h in histos:
         h.Write()
@@ -118,6 +113,63 @@ def eventSelection(options):
     #a.PrintNodeTree('node_tree.dot',verbose=True)
     print("Total time: "+str((time.time()-start_time)/60.) + ' min')
 
+def xrdcpFile(lfn):
+    xrdcpCMD = "xrdcp root://cms-xrd-global.cern.ch//{0} .".format(lfn)
+    print(xrdcpCMD)
+    os.system(xrdcpCMD)
+
+def iterateFiles(options,report=True):
+    inputFile = open(options.input,'r')
+    lines     = inputFile.readlines()
+    pd        = options.input.split("/")[-1].replace(".txt","")
+    year      = options.year
+    if not os.path.exists(pd):
+        os.makedirs(pd)
+    os.chdir(pd)    
+    todoFlag = False
+
+    for line in lines:
+        lfn      = line.strip()
+        fileName = lfn.split("/")[-1]
+        #print("Processing file", fileName)
+        outFile  = fileName.replace(".root","_output.root")
+        if os.path.isfile(outFile):
+            if os.path.getsize(outFile)>1000:
+                continue
+            else:#If file is empty, delete and try again
+                print(outFile, " seems to be empty, deleting and redoing")
+                print("rm {0}".format(fileName))
+                os.system("rm {0}".format(fileName))
+        
+        todoFlag = True
+        if report:
+            print("This file is mising", fileName)
+            break
+
+        try:
+            xrdcpFile(lfn)
+        except:
+            print("Could not copy ", lfn)
+            continue
+
+        try:
+            eventSelection(fileName,outFile,year)
+        except:
+            print("Could not run selection on ", fileName)
+
+        try:
+            print("rm {0}".format(fileName))
+            os.system("rm {0}".format(fileName))
+        except:
+            continue
+
+    if not todoFlag:
+        print("All done for", pd, " - hadding")
+        os.chdir('..')
+        haddCmd = "hadd -f mergedOutputs/{0}.root {0}/*output.root".format(pd)
+        os.system(haddCmd)
+
+
 
 
 parser = OptionParser()
@@ -126,14 +178,12 @@ parser.add_option('-i', '--input', metavar='IFILE', type='string', action='store
                 default   =   '',
                 dest      =   'input',
                 help      =   'A root file or text file with multiple root file locations to analyze')
-parser.add_option('-o', '--output', metavar='OFILE', type='string', action='store',
-                default   =   'output.root',
-                dest      =   'output',
-                help      =   'Output file name.')
 parser.add_option('-y', '--year', metavar='year', type='string', action='store',
                 default   =   '2016',
                 dest      =   'year',
                 help      =   'Dataset year')
 
 (options, args) = parser.parse_args()
-eventSelection(options)
+CompileCpp("TIMBER/Framework/Zbb_modules/Zbb_Functions.cc") 
+CompileCpp("TIMBER/Framework/Zbb_modules/helperFunctions.cc") 
+iterateFiles(options,report=False)

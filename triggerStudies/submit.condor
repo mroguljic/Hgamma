@@ -1,0 +1,11 @@
+universe              = vanilla
+executable            = /afs/cern.ch/work/m/mrogulji/Hgamma/Hgamma/triggerStudies/exec.sh
+output                = /afs/cern.ch/work/m/mrogulji/Hgamma/Hgamma/triggerStudies/output_$(Process).out
+error                 = /afs/cern.ch/work/m/mrogulji/Hgamma/Hgamma/triggerStudies/output_$(Process).err
+log                   = /afs/cern.ch/work/m/mrogulji/Hgamma/Hgamma/triggerStudies/output_$(Process).log
++JobFlavour           = "workday"
+Arguments 			  = "$(args)"
+use_x509userproxy 	  = true
+Queue args from /afs/cern.ch/work/m/mrogulji/Hgamma/Hgamma/triggerStudies/args.txt
+queue
+
