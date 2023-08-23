@@ -227,7 +227,36 @@ if not isData:
     a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
     a.AddCorrection(triggerCorr, evalArgs={'val':'trigger__nom','valUp':'trigger__up','valDown':'trigger__down'})
 
-a.MakeWeightCols()
+if(options.process =="Hgamma"):
+    #Reweight Hgamma gha2 sample to different couplings
+    #We will normalize to the xsec with gha2=0.0530640, xsec(pp->Hy->bby)=12.01 fb
+    #Applying non-normalized weights will transfer this xsec to the xsec where each coupling is set to 1
+
+    ghza2_weight   = genWCorr.Clone('ghza2',newMainFunc="evalCorrection")
+    ghza4_weight   = genWCorr.Clone('ghza4',newMainFunc="evalCorrection")
+    gha2_weight    = genWCorr.Clone('gha2',newMainFunc="evalCorrection")
+    gha4_weight    = genWCorr.Clone('gha4',newMainFunc="evalCorrection")
+    a.AddCorrection(ghza2_weight, evalArgs={'val':'ghza2_weight'})
+    a.AddCorrection(ghza4_weight, evalArgs={'val':'ghza4_weight'})
+    a.AddCorrection(gha2_weight,  evalArgs={'val':'gha2_weight'})
+    a.AddCorrection(gha4_weight,  evalArgs={'val':'gha4_weight'})
+
+    ghza2_gha2_weight    = genWCorr.Clone('ghza2_gha2',newMainFunc="evalCorrection")
+    ghza4_gha4_weight    = genWCorr.Clone('ghza4_gha4',newMainFunc="evalCorrection")
+
+    a.AddCorrection(ghza2_gha2_weight, evalArgs={'val':'ghza4_gha4_weight'})
+    a.AddCorrection(ghza4_gha4_weight, evalArgs={'val':'ghza2_gha2_weight'})
+
+
+    a.MakeWeightCols(name="ghza2",dropList=["ghza4","gha4","gha2","ghza4_gha4","ghza2_gha2"])
+    a.MakeWeightCols(name="ghza4",dropList=["ghza2","gha4","gha2","ghza4_gha4","ghza2_gha2"])
+    a.MakeWeightCols(name="gha2",dropList=["ghza4","gha4","ghza2","ghza4_gha4","ghza2_gha2"])
+    a.MakeWeightCols(name="gha4",dropList=["ghza4","gha2","ghza2","ghza4_gha4","ghza2_gha2"])
+    a.MakeWeightCols(name="ghza4_gha4",dropList=["ghza4","gha2","ghza2","gha4","ghza2_gha2"])
+    a.MakeWeightCols(name="ghza2_gha2",dropList=["ghza4","gha2","ghza2","gha4","ghza4_gha4"])
+else:
+    a.MakeWeightCols()
+
 
 regionDefs      = [("T","ScaledPnet==2"),("F","ScaledPnet==0"),("M","ScaledPnet==1")]
 regionYields    = {}
@@ -244,14 +273,25 @@ for region,cut in regionDefs:
     if nomTreeFlag:
         HmassHist   = r.TH1F('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200)
         HmassPtHist = r.TH2F('{0}_H_m_pT_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000)
-        HptHist     = a.DataFrame.Histo1D(('{0}_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight__nominal")
-        GammaptHist = a.DataFrame.Histo1D(('{0}_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight__nominal")
+        if(options.process =="Hgamma"):
+            HptHist         = a.DataFrame.Histo1D(('{0}HZy_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight_ghza2__nominal")
+            GammaptHist     = a.DataFrame.Histo1D(('{0}HZy_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight_ghza2__nominal")
+            HptHyyHist      = a.DataFrame.Histo1D(('{0}Hyy_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight_gha2__nominal")
+            GammaptHyyHist  = a.DataFrame.Histo1D(('{0}Hyy_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight_gha2__nominal")
+            histos.append(HptHist)
+            histos.append(GammaptHist)
+            histos.append(HptHyyHist)
+            histos.append(GammaptHyyHist)
+        else:
+            HptHist     = a.DataFrame.Histo1D(('{0}_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight__nominal")
+            GammaptHist = a.DataFrame.Histo1D(('{0}_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight__nominal")
+            histos.append(HptHist)
+            histos.append(GammaptHist)
         templates   = a.MakeTemplateHistos(HmassHist,[massVar])
         templates2D = a.MakeTemplateHistos(HmassPtHist,[massVar,"Higgs_pt"])
         histGroups.append(templates)
         histGroups.append(templates2D)
-        histos.append(HptHist)
-        histos.append(GammaptHist)
+
 
         if(variation=="nom" and options.process=="ZGamma"):
             categorizedHistos, categorizedGroups = separateVHistos(a,options.process,region,nomTreeFlag,massVar)

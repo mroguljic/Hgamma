@@ -191,13 +191,13 @@ def eventSelection(options):
 
 
     a.Apply([evtColumns])
-
     if("ZGamma" in options.process):
         a.Define("jetCat","classifyZJet(Higgs_phi, Higgs_eta, nGenPart, GenPart_phi, GenPart_eta, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags)")
 
 
     #Apply photon energy scale/resolution unc. scale factors
     if("photonEs" in options.variation):
+
         if(year=="2016APV"):
             yearAlt = "2016preVFP"
         elif(year=="2016"):
@@ -209,17 +209,21 @@ def eventSelection(options):
         if(options.variation=="photonEsUp"):
             a.Define("Gamma_gain","Photon_seedGain[0]")
             a.Define('scale_corr','photon_scale_unc->evaluate({"%s","scaleup",Gamma_eta,Gamma_gain})'%yearAlt)
-            a.Define("Gamma_pt","Photon_pt[0]*scale_corr")
+            a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)+scale_corr")
+            a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
         elif(options.variation=="photonEsDown"):
             a.Define("Gamma_gain","Photon_seedGain[0]")
-            a.Define('scale_corr','photon_scale_unc->evaluate({"%s","scaledown",Gamma_eta,Gamma_gain})'%yearAlt)
-            a.Define("Gamma_pt","Photon_pt[0]*scale_corr")
+            a.Define('scale_corr','photon_scale_unc->evaluate({"%s","scaleup",Gamma_eta,Gamma_gain})'%yearAlt)
+            a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)-scale_corr")
+            a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
         else:
             print("WARNING: Unknown photon es variation")
     elif(options.variation=="photonErUp"):
-        a.Define("Gamma_pt","Photon_pt[0]*(1+Photon_dEsigmaUp[0])")
+        a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)+Photon_dEsigmaUp[0]")
+        a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
     elif(options.variation=="photonErDown"):
-        a.Define("Gamma_pt","Photon_pt[0]*(1+Photon_dEsigmaDown[0])")
+        a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)+Photon_dEsigmaDown[0]")
+        a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
     else:
         a.Define("Gamma_pt","Photon_pt[0]")
 
@@ -324,6 +328,25 @@ def eventSelection(options):
         snapshotColumns.append("genZPt")
         snapshotColumns.append("jetCat")
 
+    if(options.process=="Hgamma"):
+        #Single coupling weights
+        a.Define("ghza2_weight","p_Gen_GammaHbb_SIG_ghza2_1_JHUGen")
+        a.Define("ghza4_weight","p_Gen_GammaHbb_SIG_ghza4_1_JHUGen")
+        a.Define("gha2_weight" ,"p_Gen_GammaHbb_SIG_gha2_1_JHUGen")
+        a.Define("gha4_weight" ,"p_Gen_GammaHbb_SIG_gha4_1_JHUGen")
+
+        #Interference weights
+        a.Define("ghza2_ghza4_weight","p_Gen_GammaHbb_SIG_ghza2_1_ghza4_1_JHUGen - ghza2_weight - ghza4_weight")
+        a.Define("ghza2_gha2_weight" ,"p_Gen_GammaHbb_SIG_ghza2_1_gha2_1_JHUGen - ghza2_weight - gha2_weight")
+        a.Define("ghza2_gha4_weight" ,"p_Gen_GammaHbb_SIG_ghza2_1_gha4_1_JHUGen - ghza2_weight - gha4_weight")
+        a.Define("ghza4_gha2_weight" ,"p_Gen_GammaHbb_SIG_ghza4_1_gha2_1_JHUGen - ghza4_weight - gha2_weight")
+        a.Define("ghza4_gha4_weight" ,"p_Gen_GammaHbb_SIG_ghza4_1_gha4_1_JHUGen - ghza4_weight - gha4_weight")
+        a.Define("gha2_gha4_weight"  ,"p_Gen_GammaHbb_SIG_gha2_1_gha4_1_JHUGen - gha2_weight - gha4_weight")
+
+        a.Cut("gha2_weight_cut","gha2_weight>0")#Remove NaN events
+        
+        snapshotColumns.extend(["ghza2_weight","ghza4_weight","gha2_weight","gha4_weight"])
+        snapshotColumns.extend(["ghza2_ghza4_weight","ghza2_gha2_weight","ghza2_gha4_weight","ghza4_gha2_weight","ghza4_gha4_weight","gha2_gha4_weight"])
 
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)
 
