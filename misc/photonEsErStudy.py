@@ -45,8 +45,8 @@ def massCorrectorString(variation,isData):
         elif(variation=="jerDown"):
             jetCorrector  = '{FatJet_JES_nom,FatJet_JER_down,FatJet_JMS_nom,FatJet_JMR_nom}'
         elif(variation=="jmsUp"):
+            #jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_up,FatJet_JMR_nom}'
             #Applying a custom jms uncertainty in the event loop
-            #jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_down,FatJet_JMR_nom}'
             jetCorrector  = '{FatJet_JES_nom,FatJet_JER_nom,FatJet_JMS_nom,FatJet_JMR_nom}'
         elif(variation=="jmsDown"):
             #Applying a custom jms uncertainty in the event loop
@@ -83,17 +83,13 @@ def eventSelection(options):
         isData=False
         print("Running on MC")
     nProc = a.genEventSumw
-    #------------------------------#
 
 
-    #------------Setup env----------#
+    import correctionlib
+    correctionlib.register_pyroot_binding() 
+    CompileCpp("TIMBER/Framework/Hgamma_modules/Hgamma_Functions.cc") 
     CompileCpp("TIMBER/Framework/Zbb_modules/Zbb_Functions.cc") 
     CompileCpp("TIMBER/Framework/Zbb_modules/helperFunctions.cc") 
-
-    ptCorrector     = ptCorrectorString(options.variation,isData) 
-    massCorrector   = massCorrectorString(options.variation,isData) 
-
-    histos          = []
 
     # if(options.year=="2016APV"):
     #    deepCsvM    = 0.6001
@@ -118,122 +114,131 @@ def eventSelection(options):
     else:
         print("Year not supported")
         sys.exit()
-    #------------------------------#
 
+    ptCorrector     = ptCorrectorString(options.variation,isData) 
+    massCorrector   = massCorrectorString(options.variation,isData) 
 
-    #-------AK4 b-tag SF-----------#
-    if not isData:
-        import correctionlib
-        correctionlib.register_pyroot_binding() 
-        CompileCpp("TIMBER/Framework/Hgamma_modules/Hgamma_Functions.cc") 
-    #------------------------------#
-
+    histos          = []
     nSkimmed = getNweighted(a,isData)
 
     #-------MET filters------------#
     MetFilters = ["Flag_BadPFMuonFilter","Flag_EcalDeadCellTriggerPrimitiveFilter","Flag_HBHENoiseIsoFilter","Flag_HBHENoiseFilter",
-    "Flag_globalSuperTightHalo2016Filter","Flag_goodVertices","Flag_BadPFMuonDzFilter","Flag_eeBadScFilter","Flag_ecalBadCalibFilter"]
+    "Flag_globalSuperTightHalo2016Filter","Flag_goodVertices","Flag_BadPFMuonDzFilter","Flag_eeBadScFilter"]
     if(year=="2017" or year=="2018"):
         MetFilters.append("Flag_ecalBadCalibFilter")
     MetFiltersString = a.GetFlagString(MetFilters)
     if MetFiltersString:#RDF crashes if METstring is empty
         a.Cut("MET_Filters",MetFiltersString)
-    #------------------------------#
-
 
     #----------Triggers------------#
     beforeTrigCheckpoint    = a.GetActiveNode()
     if(year=="2016" or year=="2016APV"):
-        triggerList         = ["HLT_AK8DiPFJet280_200_TrimMass30","HLT_AK8PFHT650_TrimR0p1PT0p03Mass50",
-            "HLT_AK8PFHT700_TrimR0p1PT0p03Mass50","HLT_PFHT800","HLT_PFHT900","HLT_AK8PFJet360_TrimMass30","HLT_AK8PFJet450"]
+        triggerList         = ["HLT_Photon175"]
     elif(year=="2017"):
-        triggerList         =["HLT_PFHT1050","HLT_AK8PFJet400_TrimMass30","HLT_AK8PFJet420_TrimMass30",
-        "HLT_AK8PFHT800_TrimMass50","HLT_PFJet500","HLT_AK8PFJet500"]
+        triggerList         =["HLT_Photon200"]
     elif(year=="2018"):
-       triggerList          =["HLT_PFHT1050","HLT_AK8PFJet400_TrimMass30","HLT_AK8PFJet420_TrimMass30"
-       ,"HLT_AK8PFHT800_TrimMass50","HLT_PFJet500","HLT_AK8PFJet500"]
+       triggerList          =["HLT_Photon200"]
     triggersStringAll       = a.GetTriggerString(triggerList)    
     if(isData): #Only applying trigger to data, will apply trigger turn-on to MC
         a.Cut("Triggers",triggersStringAll)
     nTrig                   = getNweighted(a,isData)
     #------------------------------#
 
-
-
-    #------V+Jets diagnostics-------#
-    if("ZJets" in options.process or "WJets" in options.process):
-        a.Define("genVpt","genVpt(nGenPart,GenPart_pdgId,GenPart_pt,GenPart_statusFlags)")
-        hvPt = a.GetActiveNode().DataFrame.Histo1D(('{0}_no_cuts_gen_V_pT'.format(options.process),';Gen V pT [GeV]; Events/10 GeV;',200,0,2000),"genVpt","genWeight")
-        h_HT = a.GetActiveNode().DataFrame.Histo1D(('{0}_no_cuts_HT'.format(options.process),';HT [GeV]; Events/10 GeV;',200,0,2000),"LHE_HT","genWeight")
-
-        histos.append(hvPt)
-        histos.append(h_HT)
-    #------------------------------#
-    #Photon veto
-    a.Cut("photonVeto","!(nPhoton>0 && Photon_cutBased[0]==3 && abs(Photon_eta[0])<2.4 && Photon_pt[0]>300)")
-
+    if("ZGamma" in options.process):
+        a.Define("genGammaPt","genGammaPt(nGenPart,GenPart_pdgId,GenPart_pt,GenPart_statusFlags)")
+        a.Define("genZPt","genZPt(nGenPart,GenPart_pdgId,GenPart_pt,GenPart_statusFlags)")
+        #dis = a.DataFrame.Display(["genZPt","genGammaPt"],20)
+        #dis.Print()
 
     #----------Selection-----------#
-    a.Cut("nFatJet","nFatJet>1")
-    a.Cut("ID","FatJet_jetId[0]>1 && FatJet_jetId[1]>1")#bit 1 is loose, bit 2 is tight, bit3 is tightlepVeto, we select tight
-    nJetID = getNweighted(a,isData)
-
-
-    a.Cut("Eta","abs(FatJet_eta[0])<2.4 && abs(FatJet_eta[1])<2.4")
+    a.Cut("JetAndPhoton","nFatJet>0 && nPhoton>0")
+    a.Define("Hidx","leadingNonGammaAK8Idx(nFatJet,FatJet_eta,FatJet_phi,Photon_eta[0],Photon_phi[0])")
+    a.Cut("HidxCut","Hidx>-1")
+    nJetGamma = getNweighted(a,isData)
+    a.Cut("EtaCut","abs(FatJet_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
     nEta = getNweighted(a,isData)
+
+    a.Cut("GammaID","Photon_cutBased[0]==3")#cut-based ID Fall17V2 Tight
+    #a.Cut("GammaID","Photon_mvaID_WP80[0]==1")#MVA ID Fall17V2
+    nID = getNweighted(a,isData)
 
     evtColumns = VarGroup("Event columns")
     evtColumns.Add('FatJet_pt_corr','hardware::MultiHadamardProduct(FatJet_pt,%s)'%ptCorrector)
     evtColumns.Add('FatJet_msoftdrop_corr','hardware::MultiHadamardProduct(FatJet_msoftdrop,%s)'%massCorrector)
     evtColumns.Add('FatJet_mpnet_corr','hardware::MultiHadamardProduct(FatJet_particleNet_mass,%s)'%massCorrector)
-    evtColumns.Add("FatJet_pt0","FatJet_pt_corr[0]")
-    evtColumns.Add("FatJet_pt1","FatJet_pt_corr[1]")
-    evtColumns.Add("FatJet_eta0","FatJet_eta[0]")
-    evtColumns.Add("FatJet_phi0","FatJet_phi[0]")
+    evtColumns.Add("Higgs_pt","FatJet_pt_corr[Hidx]")
+    evtColumns.Add("Higgs_eta","FatJet_eta[Hidx]")
+    evtColumns.Add("Higgs_phi","FatJet_phi[Hidx]")
+    evtColumns.Add("HiggsSDMass",'FatJet_msoftdrop_corr[Hidx]')
+    
+    #Adding custom jms uncertainty of 2%
+    if(options.variation=="jmsUp"):
+        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]*1.02')
+    elif(options.variation=="jmsDown"):
+        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]*0.98')
+    else:
+        evtColumns.Add("HiggsPnetMass",'FatJet_mpnet_corr[Hidx]')
+    evtColumns.Add("Gamma_eta","Photon_eta[0]")
+    evtColumns.Add("Gamma_phi","Photon_phi[0]")
     evtColumns.Add("nEle","nElectrons(nElectron,Electron_cutBased,0,Electron_pt,20,Electron_eta)")
     #0:fail,1:veto,2:loose,3:medium,4:tight
     #condition is, cutBased>cut
     evtColumns.Add("nMu","nMuons(nMuon,Muon_looseId,Muon_pfIsoId,0,Muon_pt,20,Muon_eta)")
     #1=PFIsoVeryLoose, 2=PFIsoLoose, 3=PFIsoMedium, 4=PFIsoTight, 5=PFIsoVeryTight, 6=PFIsoVeryVeryTight
-    #condition is, pfIsoId>cut
-
-    #Adding custom jms uncertainty of 2%
-    if(options.variation=="jmsUp"):
-        evtColumns.Add("JetSDMass",'FatJet_msoftdrop_corr[0]*1.02')
-        evtColumns.Add("JetPnetMass",'FatJet_mpnet_corr[0]*1.02')
-    elif(options.variation=="jmsDown"):
-        evtColumns.Add("JetSDMass",'FatJet_msoftdrop_corr[0]*0.98')
-        evtColumns.Add("JetPnetMass",'FatJet_mpnet_corr[0]*0.98')
-    else:
-        evtColumns.Add("JetSDMass",'FatJet_msoftdrop_corr[0]')
-        evtColumns.Add("JetPnetMass",'FatJet_mpnet_corr[0]')
 
 
-    evtColumns.Add("topVetoFlag","topVeto(FatJet_eta0,FatJet_phi0,nJet,Jet_eta,{0},Jet_phi,Jet_pt,Jet_btagDeepFlavB,{1})".format(2.4,deepJetM))
+    evtColumns.Add("topVetoFlag","topVeto(Higgs_eta,Higgs_phi,nJet,Jet_eta,{0},Jet_phi,Jet_pt,Jet_btagDeepFlavB,{1})".format(2.4,deepJetM))
+
 
     a.Apply([evtColumns])
+    if("ZGamma" in options.process):
+        a.Define("jetCat","classifyZJet(Higgs_phi, Higgs_eta, nGenPart, GenPart_phi, GenPart_eta, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags)")
 
-    a.Cut("pT","FatJet_pt0>450")
-    a.Cut("pT_subl","FatJet_pt1>200")
+
+    #Apply photon energy scale/resolution unc. scale factors
+    if("photonEs" in options.variation):
+
+        if(year=="2016APV"):
+            yearAlt = "2016preVFP"
+        elif(year=="2016"):
+            yearAlt = "2016postVFP"
+        else:
+            yearAlt = year
+        ROOT.gInterpreter.Declare('auto photon_scale_set = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/EGM_ScaleUnc_{0}.json");'.format(year))
+        ROOT.gInterpreter.Declare('auto photon_scale_unc = photon_scale_set->at("UL-EGM_ScaleUnc");')
+        if(options.variation=="photonEsUp"):
+            a.Define("Gamma_gain","Photon_seedGain[0]")
+            a.Define('scale_corr','photon_scale_unc->evaluate({"%s","scaleup",Gamma_eta,Gamma_gain})'%yearAlt)
+            a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)+scale_corr")
+            a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
+        elif(options.variation=="photonEsDown"):
+            a.Define("Gamma_gain","Photon_seedGain[0]")
+            a.Define('scale_corr','photon_scale_unc->evaluate({"%s","scaleup",Gamma_eta,Gamma_gain})'%yearAlt)
+            a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)-scale_corr")
+            a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
+        else:
+            print("WARNING: Unknown photon es variation")
+    elif(options.variation=="photonErUp"):
+        a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)+Photon_dEsigmaUp[0]")
+        a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
+    elif(options.variation=="photonErDown"):
+        a.Define("Gamma_energy","Photon_pt[0]*TMath::CosH(Gamma_eta)+Photon_dEsigmaDown[0]")
+        a.Define("Gamma_pt","Gamma_energy/TMath::CosH(Gamma_eta)")
+    else:
+        a.Define("Gamma_pt","Photon_pt[0]")
+
+    a.Cut("pT","Higgs_pt>300 && Gamma_pt>300")
     npT = getNweighted(a,isData)
 
-    a.Cut("JetPnetMassCut","JetPnetMass>40")
+    a.Cut("JetPnetMassCut","HiggsPnetMass>50")
     nJetMass = getNweighted(a,isData)
-
-    if("ZJets" in options.process or "WJets" in options.process):
-        hvPt = a.GetActiveNode().DataFrame.Histo1D(('{0}_jet_sel_gen_V_pT'.format(options.process),';Gen V pT [GeV]; Events/10 GeV;',200,0,2000),"genVpt","genWeight")
-        h_HT = a.GetActiveNode().DataFrame.Histo1D(('{0}_jet_sel_HT'.format(options.process),';HT [GeV]; Events/10 GeV;',200,0,2000),"LHE_HT","genWeight")
-        histos.append(hvPt)
-        histos.append(h_HT)
-
 
     a.Cut("LeptonVeto","nMu==0 && nEle==0")
     nLeptonVeto = getNweighted(a,isData)
 
-
     if not isData:
-        #Get AK4 btag efficiency, needed for SF
-        a.Define("Jet_counts","taggedJetCount(FatJet_eta0,FatJet_phi0,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_btagDeepFlavB,{0},Jet_hadronFlavour)".format(deepJetM))
+        #Get AK4 btag efficiency, needed for 
+        a.Define("Jet_counts","taggedJetCount(Higgs_eta,Higgs_phi,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_btagDeepFlavB,{0},Jet_hadronFlavour)".format(deepJetM))
         a.Define("light_pass","Jet_counts[0]")
         a.Define("c_pass","Jet_counts[1]")
         a.Define("b_pass","Jet_counts[2]")
@@ -241,10 +246,11 @@ def eventSelection(options):
         a.Define("c_tot","Jet_counts[4]")
         a.Define("b_tot","Jet_counts[5]")
 
-        eff_light = a.DataFrame.Sum("light_pass").GetValue()/a.DataFrame.Sum("light_tot").GetValue()
-        eff_c = a.DataFrame.Sum("c_pass").GetValue()/a.DataFrame.Sum("c_tot").GetValue()
-        eff_b = a.DataFrame.Sum("b_pass").GetValue()/a.DataFrame.Sum("b_tot").GetValue()
+        eff_light = a.DataFrame.Sum("light_pass").GetValue()/(a.DataFrame.Sum("light_tot").GetValue()+0.001)
+        eff_c = a.DataFrame.Sum("c_pass").GetValue()/(a.DataFrame.Sum("c_tot").GetValue()+0.001)#avoid division by zero
+        eff_b = a.DataFrame.Sum("b_pass").GetValue()/(a.DataFrame.Sum("b_tot").GetValue()+0.001)
         print("Efficiencies l/c/b: {0:.3f} {1:.3f} {2:.3f}".format(eff_light,eff_c,eff_b))
+
 
     a.Cut("topVeto","topVetoFlag==0")
     nTopVeto = getNweighted(a,isData)
@@ -253,19 +259,14 @@ def eventSelection(options):
         #Calculate AK4 btag SF weights
         ROOT.gInterpreter.Declare('correction::Correction::Ref correction_bc = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_comb");'.format(year))
         ROOT.gInterpreter.Declare('correction::Correction::Ref correction_light = correction::CorrectionSet::from_file("/users/mrogul/Work/Hgamma/Hgamma/data/btagging_{0}.json.gz")->at("deepJet_incl");'.format(year))
-        a.Define("btagSF","calcBtagWeight(correction_light,correction_bc,FatJet_eta0,FatJet_phi0,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_hadronFlavour,{0},{1},{2})".format(eff_light,eff_c,eff_b))
+        a.Define("btagSF","calcBtagWeight(correction_light,correction_bc,Higgs_eta,Higgs_phi,nJet,Jet_eta,2.4,Jet_phi,Jet_pt,Jet_hadronFlavour,{0},{1},{2})".format(eff_light,eff_c,eff_b))
         a.Define("btagSF__nom","btagSF[0]")
         a.Define("btagSF__down","btagSF[1]")
         a.Define("btagSF__up","btagSF[2]")
 
         print("Average AK4 bTag weights nom/dn/up: {0:.3f} {1:.3f} {2:.3f}".format(a.DataFrame.Mean("btagSF__nom").GetValue(),a.DataFrame.Mean("btagSF__down").GetValue(),a.DataFrame.Mean("btagSF__up").GetValue()))
 
-    a.Define("pnet0","FatJet_particleNetMD_Xbb[0]/(FatJet_particleNetMD_Xbb[0]+FatJet_particleNetMD_QCD[0])")
-    a.Define("deepTag0","FatJet_deepTagMD_ZHbbvsQCD[0]")
-    a.Define("ddb0","FatJet_btagDDBvLV2[0]")
-    a.Define("hbb0","FatJet_btagHbb[0]")
-    #------------------------------#
-
+    a.Define("pnetHiggs","FatJet_particleNetMD_Xbb[Hidx]/(FatJet_particleNetMD_Xbb[Hidx]+FatJet_particleNetMD_QCD[Hidx])")
 
     checkpoint  = a.GetActiveNode()
     #-----Trigger study part-------#
@@ -276,63 +277,45 @@ def eventSelection(options):
         if(MetFiltersString):
             a.Cut("MET For Trigger",MetFiltersString)
         #need to change names to create nodes with different names than already existing
-        a.Cut("nFatJet_ForTrigger","nFatJet>1")
-        a.Cut("Eta_ForTrigger","abs(FatJet_eta[0])<{0} && abs(FatJet_eta[1])<{0}".format(2.4))
+        a.Cut("JetAndPhotonForTrig","nFatJet>0 && nPhoton>0")
+        a.Define("Hidx","leadingNonGammaAK8Idx(nFatJet,FatJet_eta,FatJet_phi,Photon_eta[0],Photon_phi[0])")
+        a.Cut("HidxCutForTrig","Hidx>-1")
+        nJetGamma = getNweighted(a,isData)
+        a.Cut("EtaCutForTrig","abs(FatJet_eta[Hidx])<2.4 && abs(Photon_eta[0])<2.4")
+        a.Cut("GammaIDForTrig","Photon_cutBased[0]==3")
         evtColumns.name = "Event Columns For Trigger"
         a.Apply([evtColumns])
-        a.Cut("pT_ForTrigger","FatJet_pt0>450")
-        a.Cut("pT_subl_ForTrigger","FatJet_pt1>200")
-        a.Cut("JetMassCut_ForTrigger","JetPnetMass>40")
-        a.Cut("LeptonVeto_ForTrigger","nMu==0 && nEle==0")
-        a.Cut("topVeto_ForTrigger","topVetoFlag==0")
+        a.Define("Gamma_pt_trig","Photon_pt[0]")
+        a.Cut("pT_ForTrigger","Higgs_pt>300 && Gamma_pt_trig>300")
+        a.Cut("JetPnetMassCut_ForTrigger","HiggsPnetMass>50")
 
         triggersStringAll   = a.GetTriggerString(triggerList)  
-
-        h_noTriggers        = a.GetActiveNode().DataFrame.Histo2D(('{0}_noTriggers'.format(options.process),';M_{SD} [GeV] / 1 GeV;p_{T} [GeV] / 10 GeV;',160,40,200,55,450,1000),'JetPnetMass','FatJet_pt0',"genWeight")
-        h_pT0noTriggers     = a.GetActiveNode().DataFrame.Histo1D(('{0}_pT0noTriggers'.format(options.process),';Leading jet pT [GeV]; Events/10 GeV;',55,450,1000),"FatJet_pt0","genWeight")
+        h_pTnoTriggers      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTnoTriggers'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',70,300,1000),"Gamma_pt_trig","genWeight")
         a.Cut("Triggers for trig measurement",triggersStringAll)
-        h_triggersAll       = a.GetActiveNode().DataFrame.Histo2D(('{0}_triggersAll'.format(options.process),';M_{SD} [GeV] / 1 GeV;p_{T} [GeV] / 10 GeV;',160,40,200,55,450,1000),'JetPnetMass','FatJet_pt0',"genWeight")
-        h_pT0triggersAll    = a.GetActiveNode().DataFrame.Histo1D(('{0}_pT0triggersAll'.format(options.process),';Leading jet pT [GeV]; Events/10 GeV;',55,450,1000),"FatJet_pt0","genWeight")
+        h_pTtriggersAll      = a.GetActiveNode().DataFrame.Histo1D(('{0}_GammapTtriggersAll'.format(options.process),';Gamma pT [GeV]; Events/10 GeV;',70,300,1000),"Gamma_pt_trig","genWeight")
 
-        histos.append(h_noTriggers)
-        histos.append(h_pT0noTriggers)
-        histos.append(h_triggersAll)
-        histos.append(h_pT0triggersAll)
+        histos.append(h_pTnoTriggers)
+        histos.append(h_pTtriggersAll)
         a.SetActiveNode(checkpoint)
     #------------------------------#
 
-    #-----Categorize V+Jets--------#
-    if("ZJets" in options.process):
-        a.Define("jetCat","classifyZJet(FatJet_phi0, FatJet_eta0, nGenPart, GenPart_phi, GenPart_eta, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags)")
-        a.Define("VmatchedFatJetIdx","VmatchedFatJetIdx(nFatJet,FatJet_phi,FatJet_eta,nGenPart,GenPart_phi,GenPart_eta,GenPart_pdgId,GenPart_statusFlags)")
-    if("WJets" in options.process):
-        a.Define("jetCat","classifyWJet(FatJet_phi0, FatJet_eta0, nGenPart, GenPart_phi, GenPart_eta, GenPart_pdgId, GenPart_genPartIdxMother, GenPart_statusFlags)")
-        a.Define("VmatchedFatJetIdx","VmatchedFatJetIdx(nFatJet,FatJet_phi,FatJet_eta,nGenPart,GenPart_phi,GenPart_eta,GenPart_pdgId,GenPart_statusFlags)")
-    #------------------------------#
 
 
     #--------Store Output----------#
 
-    snapshotColumns = ["pnet0","FatJet_pt0","JetPnetMass","JetSDMass","PV_npvsGood","nFatJet"]
+    snapshotColumns = ["pnetHiggs","Higgs_pt","Gamma_pt","Gamma_eta","Gamma_phi","HiggsSDMass","HiggsPnetMass","PV_npvsGood","nFatJet","nPhoton"]
     outputFile      = options.output.replace(".root","_{0}.root".format(options.variation))
 
     if not isData:
         snapshotColumns.extend(['Pileup__nom','Pileup__up','Pileup__down','Pdfweight__up','Pdfweight__down','Pileup_nTrueInt','genWeight','btagSF__nom','btagSF__down','btagSF__up'])
-        
-        if("ZJets" in options.process or "WJets" in options.process):
-            snapshotColumns.append("jetCat")
-            snapshotColumns.append("genVpt")
-            snapshotColumns.append("LHE_HT")
-            snapshotColumns.append("VmatchedFatJetIdx")
-        if not ("JetHT" in options.process or "TTbar" in options.process or "QCD" in options.process):
-            a.Define("ISR__up","PSWeight[2]")
-            a.Define("ISR__down","PSWeight[0]")
-            a.Define("FSR__up","PSWeight[3]")
-            a.Define("FSR__down","PSWeight[1]")
-            snapshotColumns.append("ISR__up")
-            snapshotColumns.append("ISR__down")
-            snapshotColumns.append("FSR__up")
-            snapshotColumns.append("FSR__down")
+        a.Define("ISR__up","PSWeight[2]")
+        a.Define("ISR__down","PSWeight[0]")
+        a.Define("FSR__up","PSWeight[3]")
+        a.Define("FSR__down","PSWeight[1]")
+        snapshotColumns.append("ISR__up")
+        snapshotColumns.append("ISR__down")
+        snapshotColumns.append("FSR__up")
+        snapshotColumns.append("FSR__down")
 
         if year=="2018":
             snapshotColumns.append("HEM_drop__nom")
@@ -340,11 +323,16 @@ def eventSelection(options):
         if "2016" in year or "2017" in year:
             snapshotColumns.extend(['Prefire__nom','Prefire__up','Prefire__down'])
 
+    if("ZGamma" in options.process):
+        snapshotColumns.append("genGammaPt")
+        snapshotColumns.append("genZPt")
+        snapshotColumns.append("jetCat")
+
 
     a.Snapshot(snapshotColumns,outputFile,'Events',saveRunChain=False)
 
-    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetID,nEta,npT,nJetMass,nLeptonVeto,nTopVeto]
-    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetID","Eta","pT","JetMass","Lepton Veto","Top veto","pass","fail"]#tagging bins will be filled out in template making
+    cutFlowVars         = [nProc,nSkimmed,nTrig,nJetGamma,nEta,nID,npT,nJetMass,nLeptonVeto,nTopVeto]
+    cutFlowLabels       = ["Processed","Skimmed","Trigger","JetPlusGamma","Eta","Gamma ID","pT","JetMass","Lepton Veto","Top Veto","tight","medium","fail"]#tagging bins will be filled out in template making
     nCutFlowlabels      = len(cutFlowLabels)
     hCutFlow            = ROOT.TH1F('{0}_cutflow'.format(options.process),"Number of events after each cut",nCutFlowlabels,0.5,nCutFlowlabels+0.5)
     for i,label in enumerate(cutFlowLabels):

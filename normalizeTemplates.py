@@ -60,7 +60,7 @@ def lumiNormalization(wp="tight",tagger="ParticleNet"):
 
     #processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","GJetsHT200","GJetsHT400","GJetsHT600","TTGJets","Hgamma"
     #,"QCD500","QCD700","QCD1000","QCD1500","QCD2000"]
-    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","HgammaHyy","HgammaHZy","QCD500","QCD700","QCD1000","QCD1500","QCD2000",
+    processes = ["ZGamma","WGamma","GJets200","GJets400","GJets600","TTGJets","Hgamma","QCD500","QCD700","QCD1000","QCD1500","QCD2000",
     "ggFHbb","VBFHbb","WplusHLNubb","WplusHQQbb","ttHbb","WminusHLNubb","WminusHQQbb","ZHHbbZQQ","ZHHbbZLL"]
     for year in ['2016','2016APV','2017','2018']:
         print(year)
@@ -155,8 +155,7 @@ def mergeRunII(wp,tagger):
     os.system("hadd -f {0}/GJets.root {1}/201*/scaled/GJets1*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/TTGJets.root {1}/201*/scaled/TTGJets.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/QCD.root {1}/201*/scaled/QCD1?.root {1}/201*/scaled/QCD1?APV.root".format(runIIDir,lumiScaledDir))
-    os.system("hadd -f {0}/HgammaHyy.root {1}/201*/scaled/HgammaHyy.root".format(runIIDir,lumiScaledDir))
-    os.system("hadd -f {0}/HgammaHZy.root {1}/201*/scaled/HgammaHZy.root".format(runIIDir,lumiScaledDir))
+    os.system("hadd -f {0}/Hgamma.root {1}/201*/scaled/Hgamma.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/ggFHbb.root {1}/201*/scaled/ggFHb*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/VBFHbb.root {1}/201*/scaled/VBFHbb*.root".format(runIIDir,lumiScaledDir))
     os.system("hadd -f {0}/WplusHLNubb.root {1}/201*/scaled/WplusHLNubb*.root".format(runIIDir,lumiScaledDir))

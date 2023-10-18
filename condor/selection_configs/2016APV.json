@@ -47,11 +47,8 @@
   "QCD2000": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2016APV/QCD2000"
   },
-  "HgammaHyy": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2016APV/HgammaHyy"
-  },
-  "HgammaHZy": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2016APV/HgammaHZy"
+  "Hgamma": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2016APV/Hgamma"
   },
   "ggFHbb": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2016/ggFHbb"

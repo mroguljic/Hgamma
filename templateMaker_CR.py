@@ -187,6 +187,14 @@ a.AddCorrection(genWCorr, evalArgs={'val':'genWeight'})
 
 
 if not isData:
+    
+    if not ("TTbar" in options.process or "QCD" in options.process):            
+        ISRcorr    = genWCorr.Clone("ISRunc",newMainFunc="evalUncert",newType="uncert")
+        FSRcorr    = genWCorr.Clone("FSRunc",newMainFunc="evalUncert",newType="uncert")
+        a.AddCorrection(ISRcorr, evalArgs={'valUp':'ISR__up','valDown':'ISR__down'})
+        a.AddCorrection(FSRcorr, evalArgs={'valUp':'FSR__up','valDown':'FSR__down'})
+
+
     pdfCorr     = genWCorr.Clone("pdfUnc",newMainFunc="evalUncert",newType="uncert")
     puCorr      = genWCorr.Clone("puUnc",newMainFunc="evalWeight",newType="weight")
     a.AddCorrection(pdfCorr, evalArgs={'valUp':'Pdfweight__up','valDown':'Pdfweight__down'})
@@ -198,9 +206,13 @@ if not isData:
     if(year=="2018"):
         hemCorr = genWCorr.Clone("hemCorrection")
         a.AddCorrection(hemCorr, evalArgs={'val':'HEM_drop__nom'})
-    if(year!="2018"):
-        prefireCorr = genWCorr.Clone("prefireUnc",newMainFunc="evalWeight",newType="weight")
-        a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
+        #Define prefiring to be "neutral" in 2018 so we can hadd prefire unc. with other years
+        a.Define("Prefire__nom","1.0")
+        a.Define("Prefire__up","1.0")
+        a.Define("Prefire__down","1.0")
+        
+    prefireCorr = genWCorr.Clone("prefireUnc",newMainFunc="evalWeight",newType="weight")
+    a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
 
     trigFile   = "data/trig_eff_{0}.root".format(year)
     a.Define("pt_for_trig","TMath::Min(Double_t(FatJet_pt0),999.)")#Trigger eff, measured up to 1000 GeV (well withing 100% eff. regime)
@@ -222,12 +234,8 @@ if not isData:
         a.Define("genVpt_rescaled","TMath::Max(200.,TMath::Min(Double_t(genVpt),1999.))")#Weights applied in 200-2000 GeV gen V pt range
         NLOqcdCorr = Correction('qcd_nlo',"TIMBER/Framework/src/HistLoader.cc",constructor=[NLOfile,qcdName],corrtype='corr')
         NLOewkCorr = Correction('ewk_nlo',"TIMBER/Framework/src/HistLoader.cc",constructor=[NLOfile,ewkName],corrtype='corr',isClone=True,cloneFuncInfo=NLOqcdCorr._funcInfo,isNewConstr=True)
-        ISRcorr    = genWCorr.Clone("ISRunc",newMainFunc="evalUncert",newType="uncert")
-        FSRcorr    = genWCorr.Clone("FSRunc",newMainFunc="evalUncert",newType="uncert")
         a.AddCorrection(NLOqcdCorr, evalArgs={'xval':'genVpt_rescaled','yval':0,'zval':0})
         a.AddCorrection(NLOewkCorr, evalArgs={'xval':'genVpt_rescaled','yval':0,'zval':0})
-        a.AddCorrection(ISRcorr, evalArgs={'valUp':'ISR__up','valDown':'ISR__down'})
-        a.AddCorrection(FSRcorr, evalArgs={'valUp':'FSR__up','valDown':'FSR__down'})
         
         if nomTreeFlag:
             parsedFlag      = False#Is correction script parsed by C++ compiler

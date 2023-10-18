@@ -36,7 +36,8 @@ def checkForCongregateResult(outDir,sample):
 
 def checkIfAlreadyProcessed(fileBase,outDir,sample):
     varFlag = False
-    if ("ZJets" in sample or "WJets" in sample or "ggFHbb" in sample):
+    #if ("ZJets" in sample or "WJets" in sample or "ggFHbb" in sample):
+    if not ("JetHT" in sample or "TTbar" in sample or "QCD" in sample):
         varFlag = True
 
     if varFlag:
@@ -62,8 +63,9 @@ def create_jobs(config,year="2016",jobs_dir="",out_dir="",nFiles=1,checkInput=Fa
         createDirIfNotExist(os.path.join(sampleJobs_dir, 'output'))
         createDirIfNotExist(sampleOut_dir)
         
-        if ("ZJets" in sample or "WJets" in sample or "ggFHbb" in sample):
-            #Only running variation on V+Jets (QCD is data-driven)
+        #if ("ZJets" in sample or "WJets" in sample or "ggFHbb" in sample):
+        if not ("JetHT" in sample or "TTbar" in sample or "QCD" in sample):
+            #Only running variation on processes that go as MC templates in fit
             exeScript = selection_template_CR.replace("JOB_DIR",sampleJobs_dir)
             nPerJob   = nFiles
             if("800" in sample):
@@ -132,7 +134,7 @@ def haddResults(outDir):
 
     for d in directories:
         for variation in variations:
-            if(variation!="nom" and not ("WJets" in d or "ZJets" in d or "ggFHbb" in d)):
+            if(variation!="nom" and ("JetHT" in d or "TTbar" in d or "QCD" in d)):
                 continue
             cmd = "hadd {0}_{1}.root {0}/*{1}*root".format(d,variation)
             if not os.path.exists("{0}_{1}.root".format(d,variation)):

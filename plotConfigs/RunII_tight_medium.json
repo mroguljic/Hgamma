@@ -48,9 +48,15 @@
     "order": 5
   },
   "HgammaHyy": {
-    "file": "results/templates/tight_medium/RunII/scaled/HgammaHyy.root",
+    "file": "results/templates/tight_medium/RunII/scaled/Hgamma.root",
     "color":"tomato",
     "label": "$H+\\gamma\\;(H\\gamma\\gamma)$",
+    "order": 7
+  },
+  "HgammaHZy": {
+    "file": "results/templates/tight_medium/RunII/scaled/Hgamma.root",
+    "color":"darkturquoise",
+    "label": "$H+\\gamma\\;(HZ\\gamma)$",
     "order": 7
   },
   "SMHiggs": {

@@ -20,11 +20,8 @@
   "WGamma": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2017/WGamma"
   },
-  "HgammaHyy": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/HgammaHyy"
-  },
-  "HgammaHZy": {
-    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/HgammaHZy"
+  "Hgamma": {
+    "dataset":"/STORE/matej/Hgamma_skims/v9/2017/Hgamma"
   },
   "GJets200": {
     "dataset":"/STORE/matej/Hgamma_skims/v9/2017/GJets200"

@@ -17,6 +17,10 @@ def xsecToHZy(xsec):
 	HZy     = sqrt(xsec/xsecRef)
 	return HZy
 
+#cp /users/mrogul/Work/Hgamma/CMSSW_10_6_14/src/SR_CR_HZy_ANv5/1SR_1CR_area/higgsCombineTest.AsymptoticLimits.mH120.root limitsHZy.root 
+#cp /users/mrogul/Work/Hgamma/CMSSW_10_6_14/src/SR_CR_Hyy_ANv5/1SR_1CR_area/higgsCombineTest.AsymptoticLimits.mH120.root limitsHyy.root 
+
+
 HZylimitFileName 	= "limitsHZy.root"
 HyylimitFileName 	= "limitsHyy.root"
 hbbBR           	= 0.58

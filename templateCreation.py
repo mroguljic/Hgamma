@@ -21,28 +21,30 @@ if("2017/" in iDir):
 if("2018/" in iDir):
     year="2018"
 
+if "_CR" in outDir:
+    CRflag = True
+else:
+    CRflag = False
+
 
 #variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","pnetUp","pnetDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
 
 #no pnet
-variations = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
+variations       = ["nom","jesUp","jesDown","jerUp","jerDown","jmsUp","jmsDown","jmrUp","jmrDown","photonEsUp","photonEsDown","photonErUp","photonErDown"]
+varProcessesSR   = ["Hgamma", "ZGamma", "WGamma"] 
 for variation in variations:
     if(variation!="nom"):
-        if not("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample or "WJets" in sample or "ZJets" in sample or "ggFHbb" in sample):
-            #Running variations only on some processes
+        #only run variations on some processes
+        if(CRflag and ("JetHT" in sample or "TTbar" in sample or "QCD" in sample)):
             continue
-        if(("pnet" in variation) and not ("ZGamma" in sample or "Hgamma" in sample or "ZJets" in sample or "ggFHbb" in sample)):
-            #Xbb SF variation only on processes with X->bb
+        if(not CRflag and not ("Hgamma" in sample or "ZGamma" in sample or "WGamma" in sample)):
             continue
 
-    if("photon" in variation and "_CR" in outputFile):
+    if("photon" in variation and CRflag):
         #Don't run photon variations in no-photon CR
         continue
 
     inputTag = variation
-    if "pnet" in variation:
-        #Pnet variation uses the nominal tree
-        inputTag = "nom"
 
     inputFile = "{0}/{1}_{2}.root".format(iDir,sample,inputTag)
     outputFile = os.path.join(outDir,"nonScaled/",sample)
@@ -53,7 +55,7 @@ for variation in variations:
         mode="RECREATE"
     else:
         mode="UPDATE"
-    if("_CR" in outputFile):
+    if CRflag:
         cmd = "python templateMaker_CR.py -i {0} -o {1} -y {2} -p {3} -v {4} -m {5} -w {6} -w {7}".format(inputFile,outputFile,year,sample,variation,mode,wpUp,wpLo)
     else:
         cmd = "python templateMaker.py -i {0} -o {1} -y {2} -p {3} -v {4} -m {5} -w {6} -w {7}".format(inputFile,outputFile,year,sample,variation,mode,wpUp,wpLo)

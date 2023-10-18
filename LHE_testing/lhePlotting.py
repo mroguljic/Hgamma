@@ -16,8 +16,8 @@ def MakeHistos(proc, vals):
   lhef = os.path.join(os.getcwd(), vals['fin'])
   fout = vals['fin'].split("/")[-1].replace('lhe', 'root')
 
-  fout = ROOT.TFile(fout, 'update')
-  fout.cd()
+  #fout = ROOT.TFile(fout, 'update')
+  #fout.cd()
 
   h_myh     = ROOT.TH1D('h_myh_{0}'.format(proc), ';m(#gamma, h) [GeV];Events;',50, 0, 1000)
   h_ctheta  = ROOT.TH1D('h_ctheta_{0}'.format(proc), ';cos(#theta);Events;',40, -1, 1)
@@ -25,6 +25,10 @@ def MakeHistos(proc, vals):
   reader = LHEReader(lhef)
   
   for iev, event in enumerate(reader):
+
+
+     # bs = list(filter(lambda x: abs(x.pdgid)== 5, event.particles))
+      print(event.particles)
       
       hs = list(filter(lambda x: abs(x.pdgid)== 25, event.particles))
       ys = list(filter(lambda x: abs(x.pdgid)== 22, event.particles))
@@ -37,8 +41,8 @@ def MakeHistos(proc, vals):
 
       h_ctheta.Fill(ctheta)
 
-  fout.Write()
-  fout.Close()
+  #fout.Write()
+  #fout.Close()
 
 def MakePlot(procs,log=True,ofile="test.png"):
   f       = ROOT.TFile.Open("cmsgrid_final.root")
@@ -96,11 +100,11 @@ def main():
 
       }
 
-  #for proc, vals in procs.items():
-    #MakeHistos(proc, vals)
+  for proc, vals in procs.items():
+    MakeHistos(proc, vals)
 
-  MakePlot(procs,log=True,ofile="myh_log.png")
-  MakePlot(procs,log=False,ofile="myh_lin.png")
+  # MakePlot(procs,log=True,ofile="myh_log.png")
+  # MakePlot(procs,log=False,ofile="myh_lin.png")
 
 if __name__ == "__main__":
   main()

@@ -274,14 +274,18 @@ for region,cut in regionDefs:
         HmassHist   = r.TH1F('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200)
         HmassPtHist = r.TH2F('{0}_H_m_pT_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000)
         if(options.process =="Hgamma"):
-            HptHist         = a.DataFrame.Histo1D(('{0}HZy_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight_ghza2__nominal")
-            GammaptHist     = a.DataFrame.Histo1D(('{0}HZy_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight_ghza2__nominal")
-            HptHyyHist      = a.DataFrame.Histo1D(('{0}Hyy_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight_gha2__nominal")
-            GammaptHyyHist  = a.DataFrame.Histo1D(('{0}Hyy_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight_gha2__nominal")
+            HptHist            = a.DataFrame.Histo1D(('{0}_H_pT_weight_ghza2_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight_ghza2__nominal")
+            GammaptHist        = a.DataFrame.Histo1D(('{0}_Gamma_pT_weight_ghza2_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight_ghza2__nominal")
+            HptHyyHist         = a.DataFrame.Histo1D(('{0}_H_pT_weight_gha2_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight_gha2__nominal")
+            GammaptHyyHist     = a.DataFrame.Histo1D(('{0}_Gamma_pT_weight_gha2_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight_gha2__nominal")
+            HptInterfHist      = a.DataFrame.Histo1D(('{0}_H_pT_weight_ghza2_gha2_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight_ghza2_gha2__nominal")
+            GammaptInterfHist  = a.DataFrame.Histo1D(('{0}_Gamma_pT_weight_ghza2_gha2_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight_ghza2_gha2__nominal")
             histos.append(HptHist)
             histos.append(GammaptHist)
             histos.append(HptHyyHist)
             histos.append(GammaptHyyHist)
+            histos.append(HptInterfHist)
+            histos.append(GammaptInterfHist)
         else:
             HptHist     = a.DataFrame.Histo1D(('{0}_H_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Higgs_pt","weight__nominal")
             GammaptHist = a.DataFrame.Histo1D(('{0}_Gamma_pT_{1}'.format(options.process,region),';pT [GeV];',31,300,2000),"Gamma_pt","weight__nominal")
@@ -300,10 +304,42 @@ for region,cut in regionDefs:
 
     else:
         #For jms/jmr/jes/jer trees, we don't need to calculate uncertainties on nominal trees
-        template   = a.DataFrame.Histo1D(('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight__nominal")
-        template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight__nominal")
-        histos.append(template)
-        histos.append(template2D)
+        if(options.process=="Hgamma"):
+            #gha2
+            template   = a.DataFrame.Histo1D(('{0}_H_m_weight_gha2_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight_gha2__nominal")
+            template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_weight_gha2_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight_gha2__nominal")
+            histos.append(template)
+            histos.append(template2D)
+            #gha4
+            template   = a.DataFrame.Histo1D(('{0}_H_m_weight_gha4_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight_gha4__nominal")
+            template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_weight_gha4_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight_gha4__nominal")
+            histos.append(template)
+            histos.append(template2D)            
+            #ghza2
+            template   = a.DataFrame.Histo1D(('{0}_H_m_weight_ghza2_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight_ghza2__nominal")
+            template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_weight_ghza2_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight_ghza2__nominal")
+            histos.append(template)
+            histos.append(template2D)            
+            #ghza4
+            template   = a.DataFrame.Histo1D(('{0}_H_m_weight_ghza4_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight_ghza4__nominal")
+            template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_weight_ghza4_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight_ghza4__nominal")
+            histos.append(template)
+            histos.append(template2D) 
+            #ghza4_gha4           
+            template   = a.DataFrame.Histo1D(('{0}_H_m_weight_ghza4_gha4_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight_ghza4_gha4__nominal")
+            template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_weight_ghza4_gha4_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight_ghza4_gha4__nominal")
+            histos.append(template)
+            histos.append(template2D)            
+            #ghza2_gha2 
+            template   = a.DataFrame.Histo1D(('{0}_H_m_weight_ghza2_gha2_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight_ghza2_gha2__nominal")
+            template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_weight_ghza2_gha2_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight_ghza2_gha2__nominal")
+            histos.append(template)
+            histos.append(template2D)            
+        else:
+            template   = a.DataFrame.Histo1D(('{0}_H_m_{1}'.format(options.process,region),';{0} [GeV];'.format(massVar),32,40,200),massVar,"weight__nominal")
+            template2D = a.DataFrame.Histo2D(('{0}_H_m_pT_{1}'.format(options.process,region),';{0} [GeV];pT [GeV]'.format(massVar),32,40,200,17,300,2000),massVar,"Higgs_pt","weight__nominal")
+            histos.append(template)
+            histos.append(template2D)
 
     regionYields[region] = getNweighted(a,isData)
 

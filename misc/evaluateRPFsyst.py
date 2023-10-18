@@ -18,7 +18,7 @@ import os
 
 
 dir1 = "/users/mrogul/Work/Hgamma/Hgamma/results/plots/SR_CR_HZy_powerLaw/1SR_1CR_area"
-dir2 = "/users/mrogul/Work/Hgamma/Hgamma/results/plots/SR_CR_HZy/1SR_1CR_area"
+dir2 = "/users/mrogul/Work/Hgamma/Hgamma/results/plots/SR_CR_HZy_10GeV_bins/1SR_1CR_area"
 
 for region in ["T","M"]:
     f1   = r.TFile.Open("{0}/postfit_{1}.root".format(dir1,region))
@@ -70,17 +70,12 @@ for region in ["T","M"]:
     h2        = hist2array(h2,return_edges=False)
     hRatio    = hist2array(hRatio,return_edges=False)
 
-    h1[0]=h1[0]/2.#First bin is twice as large as others
-    h2[0]=h2[0]/2.
-    h1Errs[0]=h1Errs[0]/2.
-    h2Errs[0]=h2Errs[0]/2.
-
-    h1 = h1/5.#Display Events / GeV
-    h2 = h2/5.
+    h1 = h1
+    h2 = h2
     h1Errs = np.array(h1Errs)
     h2Errs = np.array(h2Errs)
-    h1Errs = h1Errs/5.
-    h2Errs = h2Errs/5.
+    h1Errs = h1Errs
+    h2Errs = h2Errs
 
     plt.style.use([hep.style.CMS])
     f, axs = plt.subplots(2,1, sharex=True, sharey=False,gridspec_kw={'height_ratios': [4, 1],'hspace': 0.05})
@@ -99,7 +94,7 @@ for region in ["T","M"]:
     hep.cms.lumitext(text=lumiText, ax=axs[0], fontname=None, fontsize=None)
 
     axs[1].set_xlabel("$M_{PNet}$ [GeV]",horizontalalignment='right', x=1.0)
-    axs[0].set_ylabel("Events / GeV",horizontalalignment='right', y=1.0)
+    axs[0].set_ylabel("Events / 10 GeV",horizontalalignment='right', y=1.0)
     #ax.yaxis.set_tick_params(which='minor', left=False)    
     #ax.yaxis.set_tick_params(which='minor', right=False)    
 
