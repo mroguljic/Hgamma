@@ -4,6 +4,12 @@ import sys
 import re
 import os
 
+#Signal normalization explained below:
+#Jeff assumes g2yy=0.0530640
+#With this coupling: xsec(qq->Hy)=20.7098 fb -> xsec(qq->Hy->bby) = 12.01 fb (this is what should be in xsecs.json)
+#The weights provided by Jeff scale each coupling's template to coupling = 1
+#In the end, xsec(qq->bby) = 0.77 * 10**4 fb  (HZy) and 0.43 * 10**4 fb (Hyy)
+
 def normalizeProcess(process,year,inFile,outFile):
     h_dict = {}
     f = r.TFile.Open(inFile)

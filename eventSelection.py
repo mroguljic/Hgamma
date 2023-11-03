@@ -227,7 +227,7 @@ def eventSelection(options):
     else:
         a.Define("Gamma_pt","Photon_pt[0]")
 
-    a.Cut("pT","Higgs_pt>300 && Gamma_pt>300")
+    a.Cut("pT","Higgs_pt>300 && Gamma_pt>300 && Gamma_pt<1000")
     npT = getNweighted(a,isData)
 
     a.Cut("JetPnetMassCut","HiggsPnetMass>50")

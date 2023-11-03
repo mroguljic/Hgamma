@@ -331,7 +331,7 @@ def mergeMassBinsErrors(histErrs,edges):
 def blindHiggsMass(hist):
     for i in range(1,hist.GetNbinsX()+1):
         binCenter = hist.GetBinCenter(i)
-        if binCenter>90 and binCenter<145:
+        if binCenter>110 and binCenter<145:
             hist.SetBinContent(i,0)
     return hist
 
@@ -1319,7 +1319,7 @@ if __name__ == '__main__':
     # Postfit
     cmsswArea       = "../CMSSW_10_6_14/src/"
     polyOrders      = ["1","1"]
-    workingAreas    = ["SR_CR_HZy_ANv5"]
+    workingAreas    = ["SR_CR_standalone_HZy"]
 
 
     for workingArea in workingAreas:
@@ -1332,6 +1332,7 @@ if __name__ == '__main__':
             
         baseDir         = cmsswArea + workingArea + "/{0}SR_{1}CR_area/".format(polyOrders[0],polyOrders[1])
         odir = "results/plots/{0}/{1}SR_{2}CR_area/".format(workingArea,polyOrders[0],polyOrders[1])
+        Path(odir).mkdir(parents=True, exist_ok=True)
         fitFile         = baseDir+"postfitshapes_b.root"
         if polyOrders == ["1","1"]:
             iFile  = baseDir+"/fitDiagnosticsTest.root"
@@ -1344,26 +1345,29 @@ if __name__ == '__main__':
             rpfTag = "qcd_CR_rpfM"
             plotRPFWithUnc.getAndPlotRPF(iFile,rpfTag,odir,CRflag=True)
 
-        Path(odir).mkdir(parents=True, exist_ok=True)
         plotPostfitCombined(fitFile,odir,binWidthDivision=False,signal=signal)
         #plotRPF(fitFile,odir,"qcd_{0}".format(polyOrders[0]),yTitle="$R_{M/F}$")
         #plotRPF(fitFile,odir,"qcd_{0}".format(polyOrders[0]),passTag="T",yTitle="$R_{T/F}$")
         #plotRPF(fitFile,odir,"qcd_CR_{0}".format(polyOrders[1]),passTag="CR_T",failTag="CR_F",xRange=[60,150],yTitle="$R_{T/F}^{0\gamma}$")
         #plotRPF(fitFile,odir,"qcd_CR_{0}".format(polyOrders[1]),passTag="CR_M",failTag="CR_F",xRange=[60,150],yTitle="$R_{M/F}^{0\gamma}$")
-        plotDeltaNLL(baseDir,odir,"DeltaNLL",extraText=coupling,xRange=[-40.,40.0])
-        plotDeltaNLL(baseDir,odir,"DeltaNLL",extraText="",xRange=[-2.,2.0])
+        #plotDeltaNLL(baseDir,odir,"DeltaNLL",extraText=coupling,xRange=[-40.,40.0])
+        #plotDeltaNLL(baseDir,odir,"DeltaNLL",extraText="",xRange=[-2.,2.0])
         #plotDeltaNLLComp(baseDir,"./","DeltaNLL",extraText="",xRange=[0.,40.0])
         try:
-            plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"M",odir,binWidthDivision=False,signal=signal)
-            plotPostfit(fitFile,"F",odir,blind=False,binWidthDivision=False,signal=signal)
-            #plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal,plotSlices=True)
-            #plotPostfit(fitFile,"M",odir,binWidthDivision=False,signal=signal,plotSlices=True)
-            #plotPostfit(fitFile,"F",odir,blind=False,binWidthDivision=False,signal=signal,plotSlices=True)
-            plotPostfit(fitFile,"CR_T",odir,binWidthDivision=False,signal=signal,blind=False)
-            plotPostfit(fitFile,"CR_M",odir,binWidthDivision=False,signal=signal,blind=False)
-            plotPostfit(fitFile,"CR_F",odir,binWidthDivision=False,signal=signal,blind=False)
-
+            #For paper
+            #plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal)
+            #plotPostfit(fitFile,"M",odir,binWidthDivision=False,signal=signal)
+            #plotPostfit(fitFile,"F",odir,blind=False,binWidthDivision=False,signal=signal)
+            #plotPostfit(fitFile,"CR_T",odir,binWidthDivision=False,signal=signal,blind=False)
+            #plotPostfit(fitFile,"CR_M",odir,binWidthDivision=False,signal=signal,blind=False)
+            #plotPostfit(fitFile,"CR_F",odir,binWidthDivision=False,signal=signal,blind=False)
+            #For AN
+            plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal,plotSlices=True,paper=False)
+            plotPostfit(fitFile,"M",odir,binWidthDivision=False,signal=signal,plotSlices=True,paper=False)
+            plotPostfit(fitFile,"F",odir,blind=False,binWidthDivision=False,signal=signal,plotSlices=True,paper=False)
+            plotPostfit(fitFile,"CR_T",odir,binWidthDivision=False,signal=signal,blind=False,paper=False)
+            plotPostfit(fitFile,"CR_M",odir,binWidthDivision=False,signal=signal,blind=False,paper=False)
+            plotPostfit(fitFile,"CR_F",odir,binWidthDivision=False,signal=signal,blind=False,paper=False)
         except:
             print("Couldn't plot for {0} {1}".format(workingArea,polyOrders))
 

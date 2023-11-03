@@ -47,7 +47,7 @@ def plot(rpfTag,rpfParams,rpfCovMat,foutName="test",odir=".",CRflag=False):
     hep.cms.text("Work in progress",loc=0)
     pTLabels={350.:"300<$p_T$<400 GeV",1200.:"$p_T$>400 GeV"}
     rpfMax  = 0.
-    xRange  = [60,200]
+    xRange  = [60,massMax]
 
     if rpfTag == "qcd_rpfT":
         ylabel  = "$R_{T/F}$ x $10^{3}$"
