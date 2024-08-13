@@ -215,9 +215,10 @@ if not isData:
     a.AddCorrection(prefireCorr, evalArgs={'val':'Prefire__nom','valUp':'Prefire__up','valDown':'Prefire__down'})
 
     trigFile   = "data/trig_eff_{0}.root".format(year)
-    a.Define("pt_for_trig","TMath::Min(Double_t(FatJet_pt0),999.)")#Trigger eff, measured up to 1000 GeV (well withing 100% eff. regime)
-    triggerCorr = Correction('trig',"TIMBER/Framework/Zbb_modules/TrigEff.cc",constructor=["{0}".format(trigFile),"trig_eff"],corrtype='weight')
-    a.AddCorrection(triggerCorr, evalArgs={'xval':'pt_for_trig','yval':0,'zval':0})
+    a.Define("pt_for_trig","TMath::Min(Double_t(FatJet_pt0),699.)")#Trigger eff measured up to 700 GeV (well withing 100% eff. regime)
+    a.Define("mass_for_trig",f"TMath::Min(Double_t({massVar}),199.)")#Trigger eff measured up to 200 GeV (we won't use mass > 200 GEV)
+    triggerCorr = Correction('trig',"TIMBER/Framework/Zbb_modules/TrigEff.cc",constructor=["{0}".format(trigFile),"trig_eff_2d"],corrtype='weight')
+    a.AddCorrection(triggerCorr, evalArgs={'xval':'mass_for_trig','yval':'pt_for_trig','zval':0})
 
     if("WJets" in options.process):
         qcdName = "QCD_W"
