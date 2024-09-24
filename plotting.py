@@ -16,10 +16,12 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib import cm
 import os 
 import misc.plotRPFWithUnc as plotRPFWithUnc
-
+from matplotlib.lines import Line2D
+from matplotlib.patches import Patch
 matplotlib.use('Agg')
 r.gROOT.SetBatch(True)
 r.gStyle.SetOptFit(111)
+matplotlib.rc('axes.formatter', use_mathtext=True)
 
 def plotDeltaNLLComp(baseDir,odir,outFile,xRange=[0.,30.0],yRange=[0.,15.],signalFactor=10.,extraText="HZy coupling"):
     rss     = []
@@ -910,7 +912,7 @@ def plotShapes(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],y
     plt.clf()
     plt.cla()
 
-def plotShapesNoPull(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],yRange=[],projectionText="",binWidthDivision=True):
+def plotShapesNoPull(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],yRange=[],projectionText="",binWidthDivision=True,twoSignal=False):
     dataErrors      = getPoissonErrors(hData,binWidthDivision=binWidthDivision)
     hData, edges    = divideByBinWidth(hData,divideFlag=binWidthDivision)
 
@@ -925,30 +927,53 @@ def plotShapesNoPull(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRang
     for h in hMC:
         histosMC.append(divideByBinWidth(h,divideFlag=binWidthDivision)[0])
 
+    if "CR_F" in outputFile:
+        regionText="Untagged, fail"
+    elif "CR_M" in outputFile:
+        regionText="Untagged, medium"
+    elif "CR_T" in outputFile:
+        regionText="Untagged, tight"
+    elif "F." in outputFile:
+        regionText="$\gamma$-tagged, fail"
+    elif "M." in outputFile:
+        regionText="$\gamma$-tagged,\nmedium"
+    elif "T." in outputFile:
+        regionText="$\gamma$-tagged, tight"
+    else:
+        regionText=""
 
     plt.style.use([hep.style.CMS])
-    #matplotlib.rcParams.update({'font.size': 30})
+    matplotlib.rcParams.update({'font.size': 30})
     f, ax = plt.subplots()
 
     if any("gamma H" in label for label in labelsMC):
-        hep.histplot(histosMC[:-2],edges[0],stack=True,label = labelsMC[:-1], histtype="fill",facecolor=colorsMC[:-1])
-        hep.histplot(histosMC[-1],edges[0],stack=True,label = labelsMC[-1], histtype="step")
+        if twoSignal:
+            hep.histplot(histosMC[:-2],edges[0],stack=True,label = labelsMC[:-2], histtype="fill",facecolor=colorsMC[:-2])
+            hep.histplot(histosMC[-1],edges[0],stack=False,label = "_nolegend_", histtype="step",color=colorsMC[-1])            
+            hep.histplot(histosMC[-2],edges[0],stack=False,label = "_nolegend_", histtype="step",color=colorsMC[-2],linestyle="--")
+            custom_handle1 = Patch(facecolor="none", edgecolor=colorsMC[-1], label=labelsMC[-1])  # Solid rectangle
+            custom_handle2 = Patch(facecolor="none", edgecolor=colorsMC[-2], label=labelsMC[-2], linestyle='--')  # Dashed rectangle
+
+        else:
+            hep.histplot(histosMC[:-2],edges[0],stack=True,label = labelsMC[:-1], histtype="fill",facecolor=colorsMC[:-1])
+            hep.histplot(histosMC[-1],edges[0],stack=True,label = "_nolegend_", histtype="step")
+            custom_handle1 = Patch(facecolor="none", edgecolor=colorsMC[-1], label=labelsMC[-1])  # Solid rectangle
+            
     else:
         hep.histplot(histosMC[:-1],edges[0],stack=True,label = labelsMC, histtype="fill",facecolor=colorsMC)
-    #plt.errorbar(centresData,hData, yerr=dataErrors, xerr=xerrorsData, fmt='o',color="k",label = "Data",zorder=11)
-    plt.errorbar(centresData,hData, yerr=dataErrors, fmt='o',color="k",label = "Data",zorder=11)
+    plt.errorbar(centresData,hData, yerr=dataErrors, fmt='o',color="k",label = "Observed",zorder=11,markersize=10)
 
-    for i in range(len(uncBand[0])):
-        binWidth            = edges[0][i+1]-edges[0][i]
-        if(binWidthDivision):
-            uncBand[0][i]       = uncBand[0][i]/binWidth
-            uncBand[1][i]       = uncBand[1][i]/binWidth
-        else:
-            uncBand[0][i]       = uncBand[0][i]
-            uncBand[1][i]       = uncBand[1][i]
+    # for i in range(len(uncBand[0])):
+    #     binWidth            = edges[0][i+1]-edges[0][i]
+    #     if(binWidthDivision):
+    #         uncBand[0][i]       = uncBand[0][i]/binWidth
+    #         uncBand[1][i]       = uncBand[1][i]/binWidth
+    #     else:
+    #         uncBand[0][i]       = uncBand[0][i]
+    #         uncBand[1][i]       = uncBand[1][i]
 
-    uncBandLow = np.append(uncBand[0],[0],axis=0)
-    uncBandHi  = np.append(uncBand[1],[0],axis=0)#Hack to get the last bin uncertainty to plot, since we're using step="post"
+    # uncBandLow = np.append(uncBand[0],[0],axis=0)
+    # uncBandHi  = np.append(uncBand[1],[0],axis=0)#Hack to get the last bin uncertainty to plot, since we're using step="post"
 
     #plt.fill_between(edges[0],uncBandLow,uncBandHi,facecolor="none", hatch="xxx", edgecolor="grey", linewidth=0.0,step="post",zorder=10)
 
@@ -965,7 +990,7 @@ def plotShapesNoPull(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRang
     if(yRange):
         ax.set_ylim(yRange)
     else:
-        yMaximum = max(hData)*1.3
+        yMaximum = max(hData)*1.4
         ax.set_ylim([0.,yMaximum])
 
     if("16APV" in outputFile):
@@ -983,13 +1008,26 @@ def plotShapesNoPull(hData,hMC,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRang
     hep.cms.lumitext(lumiText)
     #hep.cms.text("Preliminary",loc=0)
     hep.cms.text("",loc=0)
-    plt.legend(loc=1,ncol=1)
+    if any("gamma H" in label for label in labelsMC):
+        handles, labels = plt.gca().get_legend_handles_labels()
+        if twoSignal:
+            handles.extend([custom_handle1, custom_handle2])
+            labels.extend([labelsMC[-1], labelsMC[-2]])
+        else:
+            handles.extend([custom_handle1])
+            labels.extend([labelsMC[-1]])
+        plt.legend(handles, labels,loc=1,ncol=1)
+    else:
+        plt.legend(loc=1,ncol=1)
 
     if(projectionText):
         plt.text(0.60, 0.60, projectionText, horizontalalignment='center',verticalalignment='center',transform=ax.transAxes)
 
     #plt.xlabel(xlabel,horizontalalignment='right', x=1.0)
     plt.xlabel(xlabel,horizontalalignment='center', x=0.5)
+
+    plt.text(0.05, 0.95, regionText, transform=plt.gca().transAxes, verticalalignment='top')
+
 
     print("Saving ", outputFile)
     plt.tight_layout()
@@ -1094,19 +1132,19 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
             colors              = ["black","gold","mistyrose","blue"]
     else:
         if(region=="pass" or region=="T" or region=="M"):
-            labels              = ["Data","Non-resonant","W+$\gamma$","Z+$\gamma$",r"$\gamma H \; (\sigma \times B = 10 fb)$"]
+            labels              = ["Observed","Non-resonant","W+$\gamma$","Z+$\gamma$",r"$\gamma H \; (\sigma \times B = 10 fb)$"]
             tags                = ["data_obs","qcd","WGamma","ZGamma",signal]
-            colors              = ["black","#99ccff","lightgreen","#669966","#ff9b9b"]
+            colors              = ["black","#99ccff","lightgreen","#669966","#669966"]
         elif(CRFlag and region=="CR_F"):
-            labels              = ["Data","Non-resonant","W+jets","Z+jets"]
+            labels              = ["Observed","Non-resonant","W+jets","Z+jets"]
             tags                = ["data_obs","qcd","WJets","ZJets"]
             colors              = ["black","#99ccff","lightgreen","#669966"]
         elif(CRFlag and region!="CR_F"):
-            labels              = ["Data","Non-resonant","W+jets","Z+jets","SM H"]
+            labels              = ["Observed","Non-resonant","W+jets","Z+jets","SM H"]
             tags                = ["data_obs","qcd","WJets","ZJets","SMHiggs"]
             colors              = ["black","#99ccff","lightgreen","#669966","#ff9b9b"]
         else:
-            labels              = ["Data","Non-resonant","W+$\gamma$","Z+$\gamma$"]
+            labels              = ["Observed","Non-resonant","W+$\gamma$","Z+$\gamma$"]
             tags                = ["data_obs","qcd","WGamma","ZGamma"]
             colors              = ["black","#99ccff","lightgreen","#669966"]
 
@@ -1195,7 +1233,8 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
         if not paper:
             plotShapes(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ (GeV)",plotName,xRange=xRange,binWidthDivision=binWidthDivision)
         else:
-            plotShapesNoPull(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ (GeV)",plotName,xRange=xRange,binWidthDivision=binWidthDivision)
+            #plotShapesNoPull(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ (GeV)",plotName,xRange=xRange,binWidthDivision=binWidthDivision)
+            plotShapesWithRatioAndBand(projections[0],projections[1:],totalProcs_proj,uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ (GeV)",plotName,xRange=xRange,binWidthDivision=False,twoSignal=True)
 
     f = r.TFile.Open("{0}/{1}_{2}.root".format(odir,outFile,region),"RECREATE")
     f.cd()
@@ -1203,6 +1242,305 @@ def plotPostfit(postfitShapesFile,region,odir,prefitTag=False,blind=True,binWidt
     for h in twoDShapes:
         h.Write()
     f.Close()
+
+def plotPostfitTwoSignalsForPaper(postfitShapesFile,region,odir):
+    signal = "HgammaHZy"
+    signal_alt = "HgammaHyy"
+    prefitTag = False
+
+    if(region=="T" or region=="M"):
+        labels              = ["Observed","Non-resonant","W+$\gamma$","Z+$\gamma$",r"$\gamma H \; (c_{z\gamma },\;\sigma \times B = 10 fb)$",r"$\gamma H \; (c_{\gamma \gamma },\;\sigma \times B = 10 fb)$"]
+        tags                = ["data_obs","qcd","WGamma","ZGamma",signal,signal_alt]
+        colors              = ["black","#99ccff","lightgreen","#669966","#FF0000","#FF0000"]
+    else:
+        print("ERROR: Region needs to be either M or T in plotPostfitTwoSignalsForPaper()")
+        exit()
+
+    outFile = "postfit"
+
+
+    twoDShapes  = []
+
+    dirRegion   = region
+    polyOrder = odir.split("/")[-2].split("SR")[0][-1]
+    
+
+    #Merge sliced histograms
+    for tag in tags:
+        if(tag=="qcd"):
+            tag     = tag+"_"+polyOrder
+        if(tag==signal_alt):
+            twoDShape   = get2DPostfitPlot(postfitShapesFile.replace("HZy","Hyy"),tag,dirRegion,prefit=prefitTag)
+            twoDShapes.append(twoDShape)
+        else:
+            twoDShape   = get2DPostfitPlot(postfitShapesFile,tag,dirRegion,prefit=prefitTag)
+            twoDShapes.append(twoDShape)        
+    totalBkg  = get2DPostfitPlot(postfitShapesFile,"TotalBkg",dirRegion,prefit=prefitTag)
+    totalBkg_X = totalBkg.ProjectionX("bkg_x")
+    totalProcs  = get2DPostfitPlot(postfitShapesFile,"TotalProcs".format(region),dirRegion,prefit=prefitTag)
+
+    xRange = [60,200]
+
+    projections         = []
+    for j,twoDShape in enumerate(twoDShapes):
+        if("Hgamma" in tags[j]):
+            proj = twoDShape.ProjectionX(tags[j]+"_projx")
+            proj.Add(totalBkg_X)
+        else:
+            proj            = twoDShape.ProjectionX(tags[j]+"_projx")
+        projections.append(proj)
+    # totalProcs_proj     = totalProcs.ProjectionX("totalprocs_projx")
+    # projections.append(totalProcs_proj)
+    uncBand_proj        = [] #We don't plot unc band for paper
+
+    plotName = "{0}/{1}_{2}.png".format(odir,outFile,region)
+    plotShapesNoPull(projections[0],projections[1:],uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ (GeV)",plotName,xRange=xRange,binWidthDivision=False,twoSignal=True)
+
+    f = r.TFile.Open("{0}/{1}_{2}.root".format(odir,outFile,region),"RECREATE")
+    f.cd()
+    totalProcs.Write()
+    for h in twoDShapes:
+        h.Write()
+    f.Close()
+
+def plotPostfitTwoSignalsForPaperWithRatio(postfitShapesFile,region,odir):
+    signal = "HgammaHZy"
+    signal_alt = "HgammaHyy"
+    prefitTag = False
+
+    if(region=="T" or region=="M"):
+        labels              = ["Observed","Non-resonant","W+$\gamma$","Z+$\gamma$",r"$\gamma H \; (c_{z\gamma },\;\sigma \times B = 10 fb)$",r"$\gamma H \; (c_{\gamma \gamma },\;\sigma \times B = 10 fb)$"]
+        tags                = ["data_obs","qcd","WGamma","ZGamma",signal,signal_alt]
+        colors              = ["black","#99ccff","lightgreen","#669966","#FF0000","#FF0000"]
+    else:
+        print("ERROR: Region needs to be either M or T in plotPostfitTwoSignalsForPaper()")
+        exit()
+
+    outFile = "postfit"
+
+
+    twoDShapes  = []
+
+    dirRegion   = region
+    polyOrder = odir.split("/")[-2].split("SR")[0][-1]
+    
+
+    #Merge sliced histograms
+    for tag in tags:
+        if(tag=="qcd"):
+            tag     = tag+"_"+polyOrder
+        if(tag==signal_alt):
+            twoDShape   = get2DPostfitPlot(postfitShapesFile.replace("HZy","Hyy"),tag,dirRegion,prefit=prefitTag)
+            twoDShapes.append(twoDShape)
+        else:
+            twoDShape   = get2DPostfitPlot(postfitShapesFile,tag,dirRegion,prefit=prefitTag)
+            twoDShapes.append(twoDShape)        
+    totalBkg  = get2DPostfitPlot(postfitShapesFile,"TotalBkg",dirRegion,prefit=prefitTag)
+    totalBkg_X = totalBkg.ProjectionX("bkg_x")
+    totalProcs  = get2DPostfitPlot(postfitShapesFile,"TotalProcs".format(region),dirRegion,prefit=prefitTag)
+
+    xRange = [60,200]
+
+    projections         = []
+    for j,twoDShape in enumerate(twoDShapes):
+        if("Hgamma" in tags[j]):
+            proj = twoDShape.ProjectionX(tags[j]+"_projx")
+            proj.Add(totalBkg_X)
+        else:
+            proj            = twoDShape.ProjectionX(tags[j]+"_projx")
+        projections.append(proj)
+    # totalProcs_proj     = totalProcs.ProjectionX("totalprocs_projx")
+    # projections.append(totalProcs_proj)
+    uncBand_proj        = getUncBand(totalBkg_X)
+
+    plotName = "{0}/{1}_{2}.png".format(odir,outFile,region)
+    plotShapesWithRatioAndBand(projections[0],projections[1:],totalBkg_X,uncBand_proj,labels[1:],colors[1:],"$M_{PNet}$ (GeV)",plotName,xRange=xRange,binWidthDivision=False,twoSignal=True)
+
+    f = r.TFile.Open("{0}/{1}_{2}.root".format(odir,outFile,region),"RECREATE")
+    f.cd()
+    totalProcs.Write()
+    for h in twoDShapes:
+        h.Write()
+    f.Close()
+
+def plotShapesWithRatioAndBand(hData,hMC,bkg_proj,uncBand,labelsMC,colorsMC,xlabel,outputFile,xRange=[],yRange=[],projectionText="",binWidthDivision=True,twoSignal=False):
+    dataErrors      = getPoissonErrors(hData,binWidthDivision=binWidthDivision)
+    hData, edges    = divideByBinWidth(hData,divideFlag=binWidthDivision)
+
+    centresData     = (edges[0][:-1] + edges[0][1:])/2.#Bin centres
+    xerrorsData     = []
+
+    for i in range(len(edges[0])-1):
+        xerror = (edges[0][i+1]-edges[0][i])/2.
+        xerrorsData.append(xerror)
+
+    histosMC        = []
+    for h in hMC:
+        histosMC.append(divideByBinWidth(h,divideFlag=binWidthDivision)[0])
+
+    bkg_proj = divideByBinWidth(bkg_proj,divideFlag=binWidthDivision)[0]
+
+    if "CR_F" in outputFile:
+        regionText="Untagged, fail"
+    elif "CR_M" in outputFile:
+        regionText="Untagged, medium"
+    elif "CR_T" in outputFile:
+        regionText="Untagged, tight"
+    elif "F." in outputFile:
+        regionText="$\gamma$-tagged, fail"
+    elif "M." in outputFile:
+        regionText="$\gamma$-tagged,\nmedium"
+    elif "T." in outputFile:
+        regionText="$\gamma$-tagged, tight"
+    else:
+        regionText=""
+
+    plt.style.use([hep.style.CMS])
+    matplotlib.rcParams.update({'font.size': 30})
+    f, axs = plt.subplots(2,1, sharex=True, sharey=False,gridspec_kw={'height_ratios': [4, 1],'hspace': 0.00}, figsize=(10, 11),constrained_layout=True)
+    axs = axs.flatten()
+    plt.sca(axs[0])
+
+    if any("gamma H" in label for label in labelsMC):
+        if twoSignal:
+            hep.histplot(histosMC[:-2],edges[0],stack=True,label = labelsMC[:-2], histtype="fill",facecolor=colorsMC[:-2])
+            hep.histplot(histosMC[-1],edges[0],stack=False,label = "_nolegend_", histtype="step",color=colorsMC[-1])            
+            hep.histplot(histosMC[-2],edges[0],stack=False,label = "_nolegend_", histtype="step",color=colorsMC[-2],linestyle="--")
+            custom_handle1 = Patch(facecolor="none", edgecolor=colorsMC[-1], label=labelsMC[-1])  # Solid rectangle
+            custom_handle2 = Patch(facecolor="none", edgecolor=colorsMC[-2], label=labelsMC[-2], linestyle='--')  # Dashed rectangle
+
+        else:
+            hep.histplot(histosMC[:-2],edges[0],stack=True,label = labelsMC[:-1], histtype="fill",facecolor=colorsMC[:-1])
+            hep.histplot(histosMC[-1],edges[0],stack=True,label = "_nolegend_", histtype="step")
+            custom_handle1 = Patch(facecolor="none", edgecolor=colorsMC[-1], label=labelsMC[-1])  # Solid rectangle
+            
+    else:
+        hep.histplot(histosMC[:-1],edges[0],stack=True,label = labelsMC, histtype="fill",facecolor=colorsMC)
+    plt.errorbar(centresData,hData, yerr=dataErrors, fmt='o',color="k",label = "Observed",zorder=11,markersize=10)
+
+    # for i in range(len(uncBand[0])):
+    #     binWidth            = edges[0][i+1]-edges[0][i]
+    #     if(binWidthDivision):
+    #         uncBand[0][i]       = uncBand[0][i]/binWidth
+    #         uncBand[1][i]       = uncBand[1][i]/binWidth
+    #     else:
+    #         uncBand[0][i]       = uncBand[0][i]
+    #         uncBand[1][i]       = uncBand[1][i]
+
+    # uncBandLow = np.append(uncBand[0],[0],axis=0)
+    # uncBandHi  = np.append(uncBand[1],[0],axis=0)#Hack to get the last bin uncertainty to plot, since we're using step="post"
+
+    #plt.fill_between(edges[0],uncBandLow,uncBandHi,facecolor="none", hatch="xxx", edgecolor="grey", linewidth=0.0,step="post",zorder=10)
+
+    def calcRatio(hData,hMC,dataErrs):
+        ratioVals=[]
+        ratioErrs=dataErrs
+        for i in range(len(hData)):
+            data      = hData[i]
+            mc        = hMC[i]
+
+            ratioVal     = data/(mc+0.000001)#Protect division by zero
+            ratioErrs[0][i] = ratioErrs[0][i]/(mc+0.000001)
+            ratioErrs[1][i] = ratioErrs[1][i]/(mc+0.000001)
+            ratioVals.append(ratioVal)
+
+        return ratioVals, ratioErrs
+
+    def calcSystBand(hMC,uncBand):
+        systBand = [[],[]]
+        for i in range(len(hMC)):
+            systBandUp = uncBand[0][i]/hMC[i]
+            systBandDn = uncBand[1][i]/hMC[i]
+            systBand[0].append(systBandUp)
+            systBand[1].append(systBandDn)
+        return systBand
+
+    ratioVals, ratioErrs = calcRatio(hData,bkg_proj,dataErrors)
+    systBand = calcSystBand(bkg_proj,uncBand)
+
+    axs[0].legend()
+    if(binWidthDivision):
+        #plt.ylabel("Events/GeV",horizontalalignment='right', y=1.0)
+        plt.ylabel("Events/GeV",horizontalalignment='center', y=0.5)
+    else:
+        #plt.ylabel("Events / bin",horizontalalignment='right', y=1.0)
+        plt.ylabel("Events / 10 GeV",horizontalalignment='center', y=0.5)
+    axs[1].set_ylabel("Data/bkg.")
+
+    if(xRange):
+        axs[0].set_xlim(xRange)
+    if(yRange):
+        axs[0].set_ylim(yRange)
+    else:
+        if "CR_M" in outputFile:
+            yMaximum = max(hData)*1.7
+        else:
+            yMaximum = max(hData)*1.6
+        axs[0].set_ylim([0.,yMaximum])
+
+    if("16APV" in outputFile):
+        lumi = 19.5
+    elif("16" in outputFile):
+        lumi = 16.8
+    elif("17" in outputFile):
+        lumi = 41.5
+    elif("18" in outputFile):
+        lumi = 59.8
+    else:
+        lumi = 138
+
+    lumiText = str(lumi)+ " $fb^{-1} (13 TeV)$"    
+    hep.cms.lumitext(lumiText)
+    #hep.cms.text("Preliminary",loc=0)
+    hep.cms.text("",loc=0)
+    if any("gamma H" in label for label in labelsMC):
+        handles, labels = plt.gca().get_legend_handles_labels()
+        if twoSignal:
+            handles.extend([custom_handle1, custom_handle2])
+            labels.extend([labelsMC[-1], labelsMC[-2]])
+        else:
+            handles.extend([custom_handle1])
+            labels.extend([labelsMC[-1]])
+        plt.legend(handles, labels,loc=1,ncol=1)
+    else:
+        plt.legend(loc=1,ncol=1)
+
+    if(projectionText):
+        plt.text(0.60, 0.60, projectionText, horizontalalignment='center',verticalalignment='center',transform=axs[0].transAxes)
+    
+
+    plt.text(0.05, 0.95, regionText, transform=plt.gca().transAxes, verticalalignment='top')
+
+    plt.sca(axs[1])#switch to lower pad
+    axs[1].axhline(y=1.0, xmin=0, xmax=1, color="grey",linestyle="--",alpha=0.5)
+    if "CR" in outputFile.split("/")[-1]:
+        axs[1].set_ylim([0.95,1.05])
+    else:
+        axs[1].set_ylim([0.0,2.3])
+    plt.xlabel(xlabel,horizontalalignment='center', x=0.5)
+    plt.errorbar(centresData,ratioVals,yerr=ratioErrs, fmt='o',color="k",markersize=10) 
+
+    #Hacky way to plot shaded region, assumes bin width = 10
+    left_edges = np.array(centresData) - 5
+    right_edges = np.array(centresData) + 5
+    for i in range(len(centresData)):
+        if i==0:
+            label = "Bkg. uncertainty"
+        else:
+            label="_nolegend_"
+        plt.fill_between([left_edges[i], right_edges[i]], systBand[0][i], systBand[1][i], color='lightgrey', alpha=0.8,label=label)
+    plt.legend(bbox_to_anchor=(-0.01, 1.1),loc='upper left')
+    axs[1].tick_params(axis='x', pad=10)  #Fix overlap between numbers on x and y axis of ratio plot
+    #plt.fill_between(centresData, systBand[0], systBand[1], color='lightgrey', alpha=0.5)
+
+
+    print("Saving ", outputFile)
+    #plt.tight_layout()
+    plt.savefig(outputFile)#,bbox_inches="tight")
+    plt.savefig(outputFile.replace("png","pdf"))#,bbox_inches="tight")
+
+    plt.clf()
+    plt.cla()
 
 def plotVJets(data,var,outFile,xTitle="",yTitle="",yRange=[],xRange=[],log=True,rebinX=1,luminosity="36.3",proj=""):
     histos = []
@@ -1490,13 +1828,16 @@ if __name__ == '__main__':
         #plotDeltaNLLComp(baseDir,"./","DeltaNLL",extraText="",xRange=[0.,40.0])
         try:
             #For paper
-            plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=True)
-            plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=True)
-            plotPostfit(fitFile,"M",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=True)
-            plotPostfit(fitFile,"F",odir,blind=False,binWidthDivision=False,signal=signal,plotSlices=True)
-            plotPostfit(fitFile,"CR_T",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=True)
-            plotPostfit(fitFile,"CR_M",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=True)
-            plotPostfit(fitFile,"CR_F",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=True)
+            #plotPostfitTwoSignalsForPaper(fitFile,"T",odir)
+            #plotPostfitTwoSignalsForPaper(fitFile,"M",odir)
+            plotPostfitTwoSignalsForPaperWithRatio(fitFile,"T",odir)
+            plotPostfitTwoSignalsForPaperWithRatio(fitFile,"M",odir)
+            #plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=False)
+            #plotPostfit(fitFile,"M",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=False)
+            plotPostfit(fitFile,"F",odir,blind=False,binWidthDivision=False,signal=signal,plotSlices=False)
+            plotPostfit(fitFile,"CR_T",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=False)
+            plotPostfit(fitFile,"CR_M",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=False)
+            plotPostfit(fitFile,"CR_F",odir,binWidthDivision=False,signal=signal,blind=False,plotSlices=False)
             #For AN
             # plotPostfit(fitFile,"T",odir,binWidthDivision=False,signal=signal,plotSlices=True,paper=False)
             # plotPostfit(fitFile,"M",odir,binWidthDivision=False,signal=signal,plotSlices=True,paper=False)
